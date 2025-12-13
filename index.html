@@ -3,53 +3,486 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pokémon Añil — Route Tracker</title>
+    <title>Pokédex Run Tracker — Pokémon Añil</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
     <style>
-      :root { color-scheme: dark; }
-      body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f17; color:#e8eefc; }
-      .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
-      h1 { margin: 0 0 6px; font-size: 22px; }
-      .sub { opacity:.8; margin: 0 0 18px; }
-      .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
-      .row { display:flex; gap: 12px; flex-wrap: wrap; }
-      .card { background:#121a2a; border:1px solid #22304f; border-radius:16px; padding:14px; }
-      .card h2 { margin:0 0 10px; font-size: 16px; }
-      button, .btn {
-        background:#1b2a46; border:1px solid #2a3b62; color:#e8eefc;
-        padding:8px 10px; border-radius:12px; cursor:pointer;
+      :root {
+        --bg0: #070a12;
+        --bg1: #0a1020;
+        --panel: rgba(12, 18, 36, 0.82);
+        --panel2: rgba(9, 14, 28, 0.78);
+        --border: rgba(95, 127, 255, 0.25);
+        --border2: rgba(255, 255, 255, 0.08);
+        --text: #eaf1ff;
+        --muted: rgba(234, 241, 255, 0.72);
+        --muted2: rgba(234, 241, 255, 0.55);
+
+        --pika: #ffd54a;
+        --blue: #4aa8ff;
+        --red: #ff4a7b;
+        --green: #62ff9b;
+
+        --shadow: 0 16px 60px rgba(0, 0, 0, 0.55);
+        --radius: 18px;
+
+        --mono: "Press Start 2P", system-ui;
+        --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
       }
-      button:hover, .btn:hover { filter: brightness(1.1); }
+
+      * { box-sizing: border-box; }
+      html, body { height: 100%; }
+      body {
+        margin: 0;
+        color: var(--text);
+        font-family: var(--sans);
+        background:
+          radial-gradient(1000px 500px at 20% 0%, rgba(74,168,255,0.18), transparent 60%),
+          radial-gradient(800px 460px at 85% 10%, rgba(255,74,123,0.14), transparent 55%),
+          radial-gradient(900px 520px at 50% 100%, rgba(98,255,155,0.10), transparent 55%),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+        overflow-x: hidden;
+      }
+
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.08;
+        background-image:
+          radial-gradient(circle at 18px 18px, rgba(255,255,255,0.55) 0 2px, transparent 3px),
+          radial-gradient(circle at 18px 18px, transparent 0 10px, rgba(255,255,255,0.22) 11px 12px, transparent 13px),
+          linear-gradient(transparent 0 14px, rgba(255,255,255,0.16) 15px 16px, transparent 17px);
+        background-size: 52px 52px;
+        filter: blur(0.1px);
+      }
+
+      body::after{
+        content:"";
+        position: fixed;
+        inset: 0;
+        pointer-events:none;
+        opacity: 0.08;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255,255,255,0.0) 0px,
+          rgba(255,255,255,0.0) 3px,
+          rgba(0,0,0,0.35) 4px
+        );
+        mix-blend-mode: overlay;
+      }
+
+      .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 18px 34px; }
+
+      .hero {
+        position: relative;
+        border-radius: 26px;
+        overflow: hidden;
+        box-shadow: var(--shadow);
+        border: 1px solid var(--border);
+        background: linear-gradient(135deg, rgba(74,168,255,0.12), rgba(255,74,123,0.10));
+      }
+      .hero .banner {
+        height: 170px;
+        background-image:
+          linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.65)),
+          url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pokémon_logo.svg/1200px-International_Pokémon_logo.svg.png");
+        background-size: cover;
+        background-position: center;
+        filter: saturate(1.05) contrast(1.05);
+      }
+      .hero .content {
+        padding: 16px 18px 18px;
+        background: rgba(5, 8, 16, 0.62);
+        backdrop-filter: blur(10px);
+      }
+      .heroTop {
+        display:flex;
+        gap: 14px;
+        flex-wrap: wrap;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .brand {
+        display:flex;
+        align-items:center;
+        gap: 12px;
+        min-width: 260px;
+      }
+      .logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 16px;
+        border: 1px solid var(--border);
+        background:
+          radial-gradient(circle at 35% 35%, rgba(255,255,255,0.18), transparent 55%),
+          linear-gradient(135deg, rgba(255,213,74,0.22), rgba(74,168,255,0.14));
+        display:grid;
+        place-items:center;
+        box-shadow: 0 10px 24px rgba(0,0,0,0.35);
+      }
+      .titleBlock h1{
+        font-family: var(--mono);
+        font-size: 14px;
+        margin: 0 0 4px;
+        letter-spacing: 0.5px;
+        text-shadow: 0 2px 0 rgba(0,0,0,0.55);
+      }
+      .titleBlock p{
+        margin: 0;
+        color: var(--muted);
+        font-size: 13px;
+      }
+      .heroActions{
+        display:flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items:center;
+        justify-content: flex-end;
+      }
+
+      .grid { display:grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        position: relative;
+      }
+      .card::before{
+        content:"";
+        position:absolute; inset:0;
+        pointer-events:none;
+        background: radial-gradient(900px 240px at 30% 0%, rgba(255,213,74,0.10), transparent 55%);
+        opacity: .9;
+      }
+      .cardHead{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 14px 10px;
+        border-bottom: 1px solid var(--border2);
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
+        position: relative;
+        z-index: 1;
+      }
+      .cardHead h2{
+        margin:0;
+        font-size: 14px;
+        letter-spacing: .2px;
+      }
+      .cardBody{
+        padding: 12px 14px 14px;
+        position: relative;
+        z-index: 1;
+      }
+      .muted { color: var(--muted); font-size: 12px; }
+      .muted2 { color: var(--muted2); font-size: 12px; }
+
+      button, .btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 14px;
+        cursor: pointer;
+        font-weight: 700;
+        letter-spacing: .2px;
+        transition: transform .08s ease, filter .15s ease, border-color .15s ease;
+        display:inline-flex;
+        align-items:center;
+        gap: 9px;
+        user-select:none;
+      }
+      button:hover, .btn:hover { filter: brightness(1.12); border-color: rgba(95,127,255,0.45); }
+      button:active, .btn:active { transform: translateY(1px) scale(0.99); }
+      button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+      /* BOTÓN PRINCIPAL (button + label) – afinado */
+.btnPrimary {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+
+  padding: 10px 14px;
+  border-radius: 16px;
+
+  font-weight: 800;
+  letter-spacing: 0.35px;
+  text-transform: uppercase;
+  font-size: 12px;
+
+  cursor: pointer;
+  user-select: none;
+
+  color: #2b2305;
+
+  /* Más transparente, menos saturado */
+  background:
+    linear-gradient(180deg,
+      rgba(255, 232, 140, 0.75),
+      rgba(255, 205, 90, 0.78)
+    );
+
+  border: 1px solid rgba(255, 210, 110, 0.55);
+
+  box-shadow:
+    0 3px 0 rgba(180, 140, 40, 0.7),
+    0 8px 22px rgba(255, 210, 120, 0.28),
+    inset 0 1px 0 rgba(255,255,255,0.45);
+
+  backdrop-filter: blur(2px);
+
+  transition:
+    transform 0.08s ease,
+    box-shadow 0.08s ease,
+    filter 0.15s ease,
+    background 0.15s ease;
+}
+
+/* Hover: solo un pelín más de presencia */
+.btnPrimary:hover {
+  filter: brightness(1.05);
+}
+
+/* Active: baja menos, más fino */
+.btnPrimary:active {
+  transform: translateY(2px);
+  box-shadow:
+    0 2px 0 rgba(180, 140, 40, 0.7),
+    0 5px 14px rgba(255, 210, 120, 0.22),
+    inset 0 1px 0 rgba(255,255,255,0.35);
+}
+
+/* Focus accesible */
+.btnPrimary:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px rgba(74, 168, 255, 0.55),
+    0 3px 0 rgba(180, 140, 40, 0.7),
+    0 8px 22px rgba(255, 210, 120, 0.28);
+}
+
+/* Label específico */
+label.btnPrimary {
+  cursor: pointer;
+}
+
+/* Iconos más integrados */
+.btnPrimary .ico {
+  opacity: 0.9;
+  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.4));
+}
+
+      .btnDanger{
+        border-color: rgba(255,74,123,0.35);
+        background: linear-gradient(180deg, rgba(255,74,123,0.18), rgba(255,74,123,0.06));
+      }
+
       input[type="file"] { display:none; }
-      .pill { display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px;
-              background:#0e1524; border:1px solid #22304f; font-size:12px; opacity:.95; }
-      .ok { color:#7CFC98; }
-      .warn { color:#ffcc66; }
-      .bad { color:#ff6b6b; }
-      .muted { opacity:.75; font-size: 12px; }
-      table { width:100%; border-collapse: collapse; overflow:auto; }
-      th, td { border-bottom:1px solid #22304f; padding:10px 8px; text-align:left; vertical-align: top; }
-      th { position: sticky; top:0; background:#0e1524; z-index:1; }
-      .loc { font-weight:600; }
-      .cell { display:flex; flex-direction:column; gap:4px; }
-      .poke { display:flex; align-items:center; gap:10px; }
-      .sprite { width:40px; height:40px; image-rendering: pixelated; background:#0e1524; border:1px solid #22304f; border-radius:12px; }
-      .small { font-size:12px; opacity:.8; }
-      .tools { display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
-      textarea { width:100%; min-height:140px; border-radius:14px; border:1px solid #22304f; background:#0e1524; color:#e8eefc; padding:10px; }
-      .right { margin-left:auto; }
+
+      .pills {
+        display:grid;
+        grid-template-columns: repeat(4, minmax(220px, 1fr));
+        gap: 12px;
+      }
+      @media (max-width: 980px){
+        .pills { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
+      }
+      @media (max-width: 540px){
+        .pills { grid-template-columns: 1fr; }
+        .titleBlock h1{ font-size: 12px; }
+      }
+
+      .pill {
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        background: var(--panel2);
+        padding: 12px;
+        display:flex;
+        flex-direction: column;
+        gap: 10px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+      }
+      .pillTop{
+        display:flex;
+        align-items:center;
+        justify-content: space-between;
+        gap: 10px;
+      }
+      .playerName{
+        display:flex;
+        align-items:center;
+        gap: 10px;
+        font-weight: 800;
+        text-transform: capitalize;
+      }
+      .badge {
+        display:inline-flex;
+        align-items:center;
+        gap: 6px;
+        font-size: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid var(--border2);
+        background: rgba(0,0,0,0.25);
+        color: var(--muted);
+      }
+      .badge.ok { color: rgba(98,255,155,0.95); border-color: rgba(98,255,155,0.25); }
+
+      .pillActions{
+        display:flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .tableWrap{
+        border-radius: 18px;
+        border: 1px solid var(--border);
+        overflow: auto;
+        background: rgba(0,0,0,0.22);
+      }
+      table { width:100%; border-collapse: collapse; min-width: 860px; }
+      th, td {
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        padding: 12px 10px;
+        text-align:left;
+        vertical-align: top;
+      }
+      th {
+        position: sticky;
+        top: 0;
+        z-index: 2;
+        background: rgba(10, 16, 32, 0.92);
+        backdrop-filter: blur(8px);
+        font-size: 12px;
+        letter-spacing: .4px;
+        text-transform: uppercase;
+        color: rgba(234,241,255,0.85);
+      }
+      .locTitle { font-weight: 800; }
+      .locMeta { margin-top: 3px; font-size: 12px; color: var(--muted2); }
+
+      .cell { display:flex; flex-direction: column; gap: 7px; }
+      .pokeRow { display:flex; align-items:center; gap: 10px; }
+
+      .sprite {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background:
+          radial-gradient(circle at 35% 35%, rgba(255,255,255,0.12), transparent 55%),
+          rgba(0,0,0,0.25);
+        image-rendering: pixelated;
+        flex: 0 0 auto;
+      }
+
+      .pokeName { font-weight: 800; line-height: 1.1; }
+      .pokeSlug { font-size: 12px; color: var(--muted2); }
+
+      .statusTag{
+        font-size: 12px;
+        font-weight: 800;
+        padding: 6px 10px;
+        border-radius: 999px;
+        border: 1px solid rgba(255,255,255,0.10);
+        background: rgba(0,0,0,0.25);
+        width: fit-content;
+      }
+      .statusTag.ok{ color: rgba(98,255,155,0.95); border-color: rgba(98,255,155,0.25); }
+      .statusTag.warn{ color: rgba(255,213,74,0.95); border-color: rgba(255,213,74,0.25); }
+      .statusTag.bad{ color: rgba(255,74,123,0.95); border-color: rgba(255,74,123,0.25); }
+
+      .footerNote{
+        display:flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .kbd{
+        font-family: var(--mono);
+        font-size: 10px;
+        opacity: .85;
+        padding: 8px 10px;
+        border-radius: 12px;
+        border: 1px dashed rgba(255,255,255,0.14);
+        background: rgba(0,0,0,0.18);
+      }
+
+      .ico { width: 18px; height: 18px; display:inline-block; }
+      .icoBig { width: 22px; height: 22px; }
+      .ico svg { width:100%; height:100%; display:block; }
     </style>
   </head>
+
   <body>
     <div class="wrap" id="app"></div>
 
     <script type="module">
-      import React, { useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18";
+      import React, { useEffect, useMemo, useState } from "https://esm.sh/react@18";
       import { createRoot } from "https://esm.sh/react-dom@18/client";
 
       const PLAYERS = ["julian", "nacho", "eladio", "josexmi"];
-      const STORAGE_KEY = "anil-route-tracker:v1";
+      const STORAGE_KEY = "anil-route-tracker:v2-fixed";
 
+      // Helpers
+      function h(type, props, ...children){ return React.createElement(type, props, ...children); }
       function safeLower(s){ return String(s ?? "").trim().toLowerCase(); }
+
+      // Icons SIN JSX (esto es lo que arregla todo en Pages)
+      const Icons = {
+        pokeball: () => h("span", { className:"ico icoBig", "aria-hidden":"true" },
+          h("svg", { viewBox:"0 0 24 24", fill:"none" },
+            h("circle", { cx:"12", cy:"12", r:"9", stroke:"rgba(255,255,255,0.65)", strokeWidth:"1.6" }),
+            h("path", { d:"M3.5 12h17", stroke:"rgba(255,255,255,0.45)", strokeWidth:"1.6", strokeLinecap:"round" }),
+            h("circle", { cx:"12", cy:"12", r:"2.5", stroke:"rgba(255,255,255,0.8)", strokeWidth:"1.6" }),
+            h("path", { d:"M12 3a9 9 0 0 1 9 9", stroke:"rgba(255,213,74,0.8)", strokeWidth:"1.6", strokeLinecap:"round" }),
+            h("path", { d:"M3 12a9 9 0 0 0 9 9", stroke:"rgba(255,74,123,0.75)", strokeWidth:"1.6", strokeLinecap:"round" })
+          )
+        ),
+        upload: () => h("span", { className:"ico", "aria-hidden":"true" },
+          h("svg", { viewBox:"0 0 24 24", fill:"none" },
+            h("path", { d:"M12 15V4", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M8.5 7.5 12 4l3.5 3.5", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round", strokeLinejoin:"round" }),
+            h("path", { d:"M5 15.5v2A2.5 2.5 0 0 0 7.5 20h9A2.5 2.5 0 0 0 19 17.5v-2", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" })
+          )
+        ),
+        download: () => h("span", { className:"ico", "aria-hidden":"true" },
+          h("svg", { viewBox:"0 0 24 24", fill:"none" },
+            h("path", { d:"M12 4v10", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M8.5 11.5 12 14.9l3.5-3.4", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round", strokeLinejoin:"round" }),
+            h("path", { d:"M5 19h14", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" })
+          )
+        ),
+        trash: () => h("span", { className:"ico", "aria-hidden":"true" },
+          h("svg", { viewBox:"0 0 24 24", fill:"none" },
+            h("path", { d:"M9 4h6", stroke:"rgba(234,241,255,0.85)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M6.5 7.2h11", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M9 7.2v12.2", stroke:"rgba(234,241,255,0.45)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M15 7.2v12.2", stroke:"rgba(234,241,255,0.45)", strokeWidth:"1.8", strokeLinecap:"round" }),
+            h("path", { d:"M7.2 7.2l.6 13A2 2 0 0 0 9.8 22h4.4a2 2 0 0 0 2-1.8l.6-13", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinejoin:"round" })
+          )
+        ),
+        bolt: () => h("span", { className:"ico", "aria-hidden":"true" },
+          h("svg", { viewBox:"0 0 24 24", fill:"none" },
+            h("path", { d:"M13 2 4 14h7l-1 8 10-14h-7l0-6Z", stroke:"rgba(255,213,74,0.95)", strokeWidth:"1.6", strokeLinejoin:"round" })
+          )
+        )
+      };
 
       function loadState() {
         try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
@@ -59,19 +492,11 @@
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
-      // Sprite via PokeAPI sprites repo (rápido y sin keys). Si no existe, se queda vacío.
-      function spriteUrl(encounterSlug) {
-        if (!encounterSlug) return "";
-        // Algunos hacks usan nombres raros; para vanilla suele ir bien:
-        return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${encounterSlug}.png`;
-      }
-
-      // Para slug -> artwork id, necesitarías una tabla (PokeAPI). Para no depender de API,
-      // usamos fallback "no sprite" si no es un número.
-      // Como tu JSON trae "encounter":"bagon" (slug), usamos un sprite alternativo (showdown).
-      function spriteUrlFallbackSlug(slug){
-        if (!slug) return "";
-        return `https://play.pokemonshowdown.com/sprites/gen5/${slug}.png`;
+      // Sprites por slug (Showdown). Funciona con "bagon", etc.
+      function spriteUrl(slug){
+        const s = safeLower(slug);
+        if (!s) return "";
+        return `https://play.pokemonshowdown.com/sprites/gen5/${s}.png`;
       }
 
       function parseRunJson(text) {
@@ -79,7 +504,6 @@
         const locations = Array.isArray(data.locations) ? data.locations : [];
         const customLocations = Array.isArray(data.customLocations) ? data.customLocations : [];
 
-        // Mapa de nombres custom por id (customLocations[].value)
         const customNameById = {};
         const customOrderById = {};
         for (const c of customLocations) {
@@ -89,11 +513,14 @@
           }
         }
 
-        // Normalizamos: id-> { displayName, encounter, nickname, status, rawId }
         const byId = {};
         for (const loc of locations) {
           const id = String(loc.id);
-          const displayName = customNameById[id] || (loc.locationName ?? null) || `Zona ${id}`;
+          const displayName =
+            customNameById[id] ||
+            (loc.locationName ?? null) ||
+            `Zona ${id}`;
+
           byId[id] = {
             id,
             displayName,
@@ -105,31 +532,23 @@
           };
         }
 
-        return {
-          gameId: data.id ?? "unknown",
-          byId,
-          customLocations
-        };
+        return { gameId: data.id ?? "unknown", byId, customLocations };
       }
 
-      function statusTag(status) {
+      function statusLabel(status){
         if (!status) return null;
         const s = safeLower(status);
-        if (["dead","muerto","rip"].includes(s)) return ["Muerto", "bad"];
-        if (["boxed","caja"].includes(s)) return ["Caja", "warn"];
-        if (["alive","vivo","ok"].includes(s)) return ["Vivo", "ok"];
-        return [status, "warn"];
+        if (["dead","muerto","rip"].includes(s)) return { text:"Muerto", cls:"bad" };
+        if (["boxed","caja"].includes(s)) return { text:"Caja", cls:"warn" };
+        if (["alive","vivo","ok"].includes(s)) return { text:"Vivo", cls:"ok" };
+        return { text: status, cls:"warn" };
       }
 
       function App() {
         const [state, setState] = useState(() => {
           const saved = loadState();
-          // Estructura: { players: {julian: {rawJson, run}, ...}}
-          const players = saved.players || {};
-          return { players };
+          return { players: saved.players || {} };
         });
-
-        const fileInputs = useRef({});
 
         useEffect(() => { saveState(state); }, [state]);
 
@@ -143,10 +562,8 @@
         }, [state]);
 
         const orderedLocationIds = useMemo(() => {
-          // Orden: si hay sortKey “c1/c0”, lo intentamos ordenar “natural”.
           const entries = [];
           for (const id of unionLocationIds) {
-            // Encontrar un ejemplo para sortKey/nombre
             let example = null;
             for (const p of PLAYERS) {
               const loc = state.players?.[p]?.run?.byId?.[id];
@@ -159,7 +576,6 @@
             });
           }
 
-          // Natural-ish sort: números primero, luego strings
           const toTuple = (k) => {
             const s = String(k);
             const n = Number(s);
@@ -224,19 +640,27 @@
           }
         }
 
-        return (
-          React.createElement("div", { className:"grid" },
-            React.createElement("div", { className:"card" },
-              React.createElement("div", { className:"row", style:{alignItems:"center"} },
-                React.createElement("div", null,
-                  React.createElement("h1", null, "Pokémon Añil — Route Tracker (Multi)"),
-                  React.createElement("p", { className:"sub" }, "Subís vuestro JSON y aquí se ve quién ha capturado qué en cada zona. Se guarda en este navegador.")
+        return h("div", { className:"grid" },
+
+          // HERO
+          h("div", { className:"hero" },
+            h("div", { className:"banner" }),
+            h("div", { className:"content" },
+              h("div", { className:"heroTop" },
+
+                h("div", { className:"brand" },
+                  h("div", { className:"logo" }, h(Icons.pokeball)),
+                  h("div", { className:"titleBlock" },
+                    h("h1", null, "POKÉDEX RUN TRACKER"),
+                    h("p", null, "Pokémon Añil (Eric Lostie) · 1 captura por zona · Multi-jugador")
+                  )
                 ),
-                React.createElement("div", { className:"tools right" },
-                  React.createElement("button", { onClick: exportAll }, "Exportar backup"),
-                  React.createElement("label", { className:"btn" },
-                    "Importar backup",
-                    React.createElement("input", {
+
+                h("div", { className:"heroActions" },
+                  h("button", { className:"btnPrimary", onClick: exportAll }, h(Icons.download), "Exportar backup"),
+                  h("label", { className:"btnPrimary" },
+                    h(Icons.upload), "Importar backup",
+                    h("input", {
                       type:"file", accept:"application/json",
                       onChange:(e)=>{
                         const f = e.target.files?.[0];
@@ -248,92 +672,121 @@
                       }
                     })
                   ),
-                  React.createElement("button", { onClick: ()=>{
-                    if (confirm("¿Borrar TODO lo guardado en este navegador?")) {
-                      localStorage.removeItem(STORAGE_KEY);
-                      setState({ players:{} });
+                  h("button", {
+                    className:"btnDanger",
+                    onClick: ()=>{
+                      if (confirm("¿Borrar TODO lo guardado en este navegador?")) {
+                        localStorage.removeItem(STORAGE_KEY);
+                        setState({ players:{} });
+                      }
                     }
-                  }}, "Reset total")
+                  }, h(Icons.trash), "Reset total")
                 )
               )
-            ),
+            )
+          ),
 
-            React.createElement("div", { className:"card" },
-              React.createElement("h2", null, "Subir JSON por jugador"),
-              React.createElement("div", { className:"row" },
+          // UPLOAD CARD
+          h("div", { className:"card" },
+            h("div", { className:"cardHead" },
+              h("h2", null, h(Icons.bolt), " Subir JSON por jugador"),
+              h("div", { className:"muted2" }, "Se guarda en este navegador (localStorage)")
+            ),
+            h("div", { className:"cardBody" },
+              h("div", { className:"pills" },
                 ...PLAYERS.map(p => {
                   const has = !!state.players?.[p]?.run;
                   const gameId = state.players?.[p]?.run?.gameId;
-                  return React.createElement("div", { key:p, className:"pill" },
-                    React.createElement("strong", null, p),
-                    has
-                      ? React.createElement("span", { className:"ok" }, `✓ cargado (${gameId||"?"})`)
-                      : React.createElement("span", { className:"muted" }, "sin JSON"),
-                    React.createElement("label", { className:"btn" },
-                      has ? "Reemplazar" : "Subir",
-                      React.createElement("input", {
-                        type:"file", accept:"application/json",
-                        onChange:(e)=>{
-                          const f = e.target.files?.[0];
-                          if (f) onUpload(p, f);
-                          e.target.value = "";
-                        }
-                      })
+
+                  const badgeCls = has ? "badge ok" : "badge";
+                  const badgeText = has ? `✓ cargado (${gameId||"?"})` : "sin JSON";
+
+                  return h("div", { key:p, className:"pill" },
+                    h("div", { className:"pillTop" },
+                      h("div", { className:"playerName" },
+                        h(Icons.pokeball),
+                        h("span", null, p)
+                      ),
+                      h("span", { className: badgeCls }, badgeText)
                     ),
-                    React.createElement("button", { onClick:()=>clearPlayer(p), disabled:!has }, "Quitar")
+                    h("div", { className:"pillActions" },
+                      h("label", { className:"btnPrimary" },
+                        h(Icons.upload), (has ? "Reemplazar" : "Subir"),
+                        h("input", {
+                          type:"file", accept:"application/json",
+                          onChange:(e)=>{
+                            const f = e.target.files?.[0];
+                            if (f) onUpload(p, f);
+                            e.target.value = "";
+                          }
+                        })
+                      ),
+                      h("button", { className:"btnDanger", onClick:()=>clearPlayer(p), disabled:!has }, h(Icons.trash), "Quitar")
+                    )
                   );
                 })
               ),
-              React.createElement("p", { className:"muted" },
-                "Tip: si una zona no trae nombre, saldrá como “Zona <id>”. Si queréis nombres perfectos (Ruta 1, Bosque Verde, etc.), se puede añadir un mapa de Kanto en el código."
+              h("div", { style:{marginTop:"10px"} },
+                h("p", { className:"muted" },
+                  "Tip: si una zona no trae nombre, saldrá como “Zona <id>”. Si queréis nombres perfectos (Ruta 1, Bosque Verde, etc.), se puede añadir un mapa fijo de Kanto."
+                )
               )
-            ),
+            )
+          ),
 
-            React.createElement("div", { className:"card" },
-              React.createElement("h2", null, "Tabla comparativa"),
+          // TABLE CARD
+          h("div", { className:"card" },
+            h("div", { className:"cardHead" },
+              h("h2", null, "Tabla comparativa (Rutas × Jugadores)"),
+              h("div", { className:"muted2" }, "Sprites + apodo + estado")
+            ),
+            h("div", { className:"cardBody" },
               orderedLocationIds.length === 0
-                ? React.createElement("p", { className:"muted" }, "Subid al menos un JSON para ver datos.")
-                : React.createElement("div", { style:{overflow:"auto", borderRadius:"14px", border:"1px solid #22304f"} },
-                    React.createElement("table", null,
-                      React.createElement("thead", null,
-                        React.createElement("tr", null,
-                          React.createElement("th", null, "Zona / Ruta"),
-                          ...PLAYERS.map(p => React.createElement("th", { key:p }, p))
+                ? h("p", { className:"muted" }, "Subid al menos un JSON para ver datos.")
+                : h("div", { className:"tableWrap" },
+                    h("table", null,
+                      h("thead", null,
+                        h("tr", null,
+                          h("th", null, "Zona / Ruta"),
+                          ...PLAYERS.map(p => h("th", { key:p }, p))
                         )
                       ),
-                      React.createElement("tbody", null,
+                      h("tbody", null,
                         ...orderedLocationIds.map(id => {
-                          // Nombre de la zona: el primero que lo tenga
                           let locName = `Zona ${id}`;
                           for (const p of PLAYERS) {
                             const loc = state.players?.[p]?.run?.byId?.[id];
                             if (loc?.displayName) { locName = loc.displayName; break; }
                           }
-                          return React.createElement("tr", { key:id },
-                            React.createElement("td", null,
-                              React.createElement("div", { className:"loc" }, locName),
-                              React.createElement("div", { className:"small" }, `id: ${id}`)
+
+                          return h("tr", { key:id },
+                            h("td", null,
+                              h("div", { className:"locTitle" }, locName),
+                              h("div", { className:"locMeta" }, `id: ${id}`)
                             ),
                             ...PLAYERS.map(p => {
                               const loc = state.players?.[p]?.run?.byId?.[id];
-                              if (!loc) return React.createElement("td", { key:p }, React.createElement("span", { className:"muted" }, "—"));
-                              const tag = statusTag(loc.status);
+                              if (!loc) return h("td", { key:p }, h("span", { className:"muted" }, "—"));
+
                               const slug = safeLower(loc.encounter || "");
-                              return React.createElement("td", { key:p },
-                                React.createElement("div", { className:"cell" },
-                                  React.createElement("div", { className:"poke" },
-                                    React.createElement("img", {
+                              const label = statusLabel(loc.status);
+                              const display = (loc.nickname ? `${loc.nickname} · ` : "") + (loc.name || loc.encounter || "???");
+
+                              return h("td", { key:p },
+                                h("div", { className:"cell" },
+                                  h("div", { className:"pokeRow" },
+                                    h("img", {
                                       className:"sprite",
-                                      src: spriteUrlFallbackSlug(slug),
+                                      src: spriteUrl(slug),
                                       alt: loc.name || loc.encounter || "",
                                       onError:(e)=>{ e.currentTarget.style.display="none"; }
                                     }),
-                                    React.createElement("div", null,
-                                      React.createElement("div", null, (loc.nickname ? `${loc.nickname} ` : "") + (loc.name || loc.encounter || "???")),
-                                      React.createElement("div", { className:"small" }, loc.encounter ? `(${loc.encounter})` : "")
+                                    h("div", null,
+                                      h("div", { className:"pokeName" }, display),
+                                      h("div", { className:"pokeSlug" }, slug ? `(${slug})` : "")
                                     )
                                   ),
-                                  tag ? React.createElement("div", { className: tag[1] }, tag[0]) : null
+                                  label ? h("div", { className:"statusTag "+label.cls }, label.text) : null
                                 )
                               );
                             })
@@ -343,11 +796,25 @@
                     )
                   )
             )
+          ),
+
+          // FOOTER
+          h("div", { className:"card" },
+            h("div", { className:"cardBody" },
+              h("div", { className:"footerNote" },
+                h("div", null,
+                  h("div", { style:{fontWeight:800, marginBottom:"4px"} }, "Sugerencia gamer:"),
+                  h("div", { className:"muted" }, "Preparate Julián te va a reventar.")
+                ),
+                h("div", { className:"kbd" }, "JSON → Import → Tabla → Flex")
+              )
+            )
           )
         );
       }
 
-      createRoot(document.getElementById("app")).render(React.createElement(App));
+      createRoot(document.getElementById("app")).render(h(App));
     </script>
   </body>
 </html>
+
