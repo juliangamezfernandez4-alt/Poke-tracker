@@ -208,83 +208,69 @@
       button:hover, .btn:hover { filter: brightness(1.12); border-color: rgba(95,127,255,0.45); }
       button:active, .btn:active { transform: translateY(1px) scale(0.99); }
       button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+
       /* BOTÓN PRINCIPAL (button + label) – afinado */
-.btnPrimary {
-  position: relative;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+      .btnPrimary {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
 
-  padding: 10px 14px;
-  border-radius: 16px;
+        padding: 10px 14px;
+        border-radius: 16px;
 
-  font-weight: 800;
-  letter-spacing: 0.35px;
-  text-transform: uppercase;
-  font-size: 12px;
+        font-weight: 800;
+        letter-spacing: 0.35px;
+        text-transform: uppercase;
+        font-size: 12px;
 
-  cursor: pointer;
-  user-select: none;
+        cursor: pointer;
+        user-select: none;
 
-  color: #2b2305;
+        color: #2b2305;
 
-  /* Más transparente, menos saturado */
-  background:
-    linear-gradient(180deg,
-      rgba(255, 232, 140, 0.75),
-      rgba(255, 205, 90, 0.78)
-    );
+        background:
+          linear-gradient(180deg,
+            rgba(255, 232, 140, 0.75),
+            rgba(255, 205, 90, 0.78)
+          );
 
-  border: 1px solid rgba(255, 210, 110, 0.55);
+        border: 1px solid rgba(255, 210, 110, 0.55);
 
-  box-shadow:
-    0 3px 0 rgba(180, 140, 40, 0.7),
-    0 8px 22px rgba(255, 210, 120, 0.28),
-    inset 0 1px 0 rgba(255,255,255,0.45);
+        box-shadow:
+          0 3px 0 rgba(180, 140, 40, 0.7),
+          0 8px 22px rgba(255, 210, 120, 0.28),
+          inset 0 1px 0 rgba(255,255,255,0.45);
 
-  backdrop-filter: blur(2px);
+        backdrop-filter: blur(2px);
 
-  transition:
-    transform 0.08s ease,
-    box-shadow 0.08s ease,
-    filter 0.15s ease,
-    background 0.15s ease;
-}
-
-/* Hover: solo un pelín más de presencia */
-.btnPrimary:hover {
-  filter: brightness(1.05);
-}
-
-/* Active: baja menos, más fino */
-.btnPrimary:active {
-  transform: translateY(2px);
-  box-shadow:
-    0 2px 0 rgba(180, 140, 40, 0.7),
-    0 5px 14px rgba(255, 210, 120, 0.22),
-    inset 0 1px 0 rgba(255,255,255,0.35);
-}
-
-/* Focus accesible */
-.btnPrimary:focus-visible {
-  outline: none;
-  box-shadow:
-    0 0 0 2px rgba(74, 168, 255, 0.55),
-    0 3px 0 rgba(180, 140, 40, 0.7),
-    0 8px 22px rgba(255, 210, 120, 0.28);
-}
-
-/* Label específico */
-label.btnPrimary {
-  cursor: pointer;
-}
-
-/* Iconos más integrados */
-.btnPrimary .ico {
-  opacity: 0.9;
-  filter: drop-shadow(0 1px 0 rgba(255,255,255,0.4));
-}
+        transition:
+          transform 0.08s ease,
+          box-shadow 0.08s ease,
+          filter 0.15s ease,
+          background 0.15s ease;
+      }
+      .btnPrimary:hover { filter: brightness(1.05); }
+      .btnPrimary:active {
+        transform: translateY(2px);
+        box-shadow:
+          0 2px 0 rgba(180, 140, 40, 0.7),
+          0 5px 14px rgba(255, 210, 120, 0.22),
+          inset 0 1px 0 rgba(255,255,255,0.35);
+      }
+      .btnPrimary:focus-visible {
+        outline: none;
+        box-shadow:
+          0 0 0 2px rgba(74, 168, 255, 0.55),
+          0 3px 0 rgba(180, 140, 40, 0.7),
+          0 8px 22px rgba(255, 210, 120, 0.28);
+      }
+      label.btnPrimary { cursor: pointer; }
+      .btnPrimary .ico {
+        opacity: 0.9;
+        filter: drop-shadow(0 1px 0 rgba(255,255,255,0.4));
+      }
 
       .btnDanger{
         border-color: rgba(255,74,123,0.35);
@@ -341,6 +327,7 @@ label.btnPrimary {
         color: var(--muted);
       }
       .badge.ok { color: rgba(98,255,155,0.95); border-color: rgba(98,255,155,0.25); }
+      .badge.warn { color: rgba(255,213,74,0.95); border-color: rgba(255,213,74,0.25); }
 
       .pillActions{
         display:flex;
@@ -426,6 +413,20 @@ label.btnPrimary {
       .ico { width: 18px; height: 18px; display:inline-block; }
       .icoBig { width: 22px; height: 22px; }
       .ico svg { width:100%; height:100%; display:block; }
+
+      /* Inputs para Room */
+      .roomRow{
+        display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+        margin-top: 10px;
+      }
+      .roomInput{
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(255,255,255,0.12);
+        background: rgba(0,0,0,0.25);
+        color: white;
+        min-width: 220px;
+      }
     </style>
   </head>
 
@@ -435,15 +436,61 @@ label.btnPrimary {
     <script type="module">
       import React, { useEffect, useMemo, useState } from "https://esm.sh/react@18";
       import { createRoot } from "https://esm.sh/react-dom@18/client";
+      import LZString from "https://esm.sh/lz-string@1.5.0";
+      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
       const PLAYERS = ["julian", "nacho", "eladio", "josexmi"];
-      const STORAGE_KEY = "anil-route-tracker:v2-fixed";
+      const STORAGE_KEY = "anil-route-tracker:v3-share";
+
+      // ====== OPCIÓN 3 (online) — Supabase (opcional) ======
+      // Si NO pones credenciales, no pasa nada: la web funciona igual.
+      const SUPABASE_URL = "https://ctmumhisojwrcikmiazf.supabase.co";      // <-- pega aquí tu URL
+      const SUPABASE_ANON_KEY = "sb_publishable_LxX3CJP8gJWbqQADRuJfeg_-P6kWy6m"; // <-- pega aquí tu anon key
+
+      const supa = (SUPABASE_URL && SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+      async function saveRoom(room, state){
+        if (!supa) return { ok:false, error:"Supabase no configurado" };
+        room = String(room || "").trim();
+        if (!room) return { ok:false, error:"Room vacío" };
+        const payload = { room, state, updated_at: new Date().toISOString() };
+        const { error } = await supa.from("runs").upsert(payload, { onConflict: "room" });
+        return error ? { ok:false, error: error.message } : { ok:true };
+      }
+
+      async function loadRoom(room){
+        if (!supa) return { ok:false, error:"Supabase no configurado" };
+        room = String(room || "").trim();
+        if (!room) return { ok:false, error:"Room vacío" };
+        const { data, error } = await supa.from("runs").select("state").eq("room", room).single();
+        if (error) return { ok:false, error: error.message };
+        return { ok:true, state: data?.state || {} };
+      }
+
+      // ====== OPCIÓN 2 (link compartible) — hash comprimido ======
+      function encodeStateToHash(state){
+        const json = JSON.stringify(state || {});
+        const packed = LZString.compressToEncodedURIComponent(json);
+        return `#rt=${packed}`;
+      }
+
+      function decodeStateFromHash(hash){
+        try{
+          const m = (hash || "").match(/#rt=([^&]+)/);
+          if (!m) return null;
+          const json = LZString.decompressFromEncodedURIComponent(m[1]);
+          if (!json) return null;
+          return JSON.parse(json);
+        }catch{
+          return null;
+        }
+      }
 
       // Helpers
       function h(type, props, ...children){ return React.createElement(type, props, ...children); }
       function safeLower(s){ return String(s ?? "").trim().toLowerCase(); }
 
-      // Icons SIN JSX (esto es lo que arregla todo en Pages)
+      // Icons SIN JSX
       const Icons = {
         pokeball: () => h("span", { className:"ico icoBig", "aria-hidden":"true" },
           h("svg", { viewBox:"0 0 24 24", fill:"none" },
@@ -492,7 +539,6 @@ label.btnPrimary {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       }
 
-      // Sprites por slug (Showdown). Funciona con "bagon", etc.
       function spriteUrl(slug){
         const s = safeLower(slug);
         if (!s) return "";
@@ -550,7 +596,17 @@ label.btnPrimary {
           return { players: saved.players || {} };
         });
 
+        const [room, setRoom] = useState("ANIL-2025");
+
+        // Guardado local (Opción 1)
         useEffect(() => { saveState(state); }, [state]);
+
+        // Autocarga desde link (Opción 2)
+        useEffect(() => {
+          const loaded = decodeStateFromHash(window.location.hash);
+          if (loaded?.players) setState({ players: loaded.players || {} });
+          // eslint-disable-next-line
+        }, []);
 
         const unionLocationIds = useMemo(() => {
           const ids = new Set();
@@ -621,6 +677,7 @@ label.btnPrimary {
           reader.readAsText(file);
         }
 
+        // Opción 1: backup archivo
         function exportAll() {
           const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
           const a = document.createElement("a");
@@ -638,6 +695,38 @@ label.btnPrimary {
           } catch(e){
             alert(`Backup inválido: ${e?.message || e}`);
           }
+        }
+
+        // Opción 2: link compartible
+        async function copyShareLink(){
+          const url = new URL(window.location.href);
+          url.hash = encodeStateToHash(state);
+          try{
+            await navigator.clipboard.writeText(url.toString());
+            alert("Link copiado ✅ Pégalo en Discord.");
+          }catch{
+            // fallback
+            prompt("Copia el link:", url.toString());
+          }
+        }
+
+        function loadFromLink(){
+          const loaded = decodeStateFromHash(window.location.hash);
+          if (!loaded?.players) return alert("No hay datos válidos en el link.");
+          setState({ players: loaded.players || {} });
+          alert("Datos cargados desde el link ✅");
+        }
+
+        // Opción 3: room online
+        async function saveRoomNow(){
+          const r = await saveRoom(room, state);
+          alert(r.ok ? "Room guardada ✅" : ("Error: " + r.error));
+        }
+        async function loadRoomNow(){
+          const r = await loadRoom(room);
+          if (!r.ok) return alert("Error: " + r.error);
+          setState({ players: r.state.players || {} });
+          alert("Room cargada ✅");
         }
 
         return h("div", { className:"grid" },
@@ -672,6 +761,9 @@ label.btnPrimary {
                       }
                     })
                   ),
+
+                  
+
                   h("button", {
                     className:"btnDanger",
                     onClick: ()=>{
@@ -690,7 +782,7 @@ label.btnPrimary {
           h("div", { className:"card" },
             h("div", { className:"cardHead" },
               h("h2", null, h(Icons.bolt), " Subir JSON por jugador"),
-              h("div", { className:"muted2" }, "Se guarda en este navegador (localStorage)")
+              h("div", { className:"muted2" }, "Local + Link + Room (opcional)")
             ),
             h("div", { className:"cardBody" },
               h("div", { className:"pills" },
@@ -726,9 +818,23 @@ label.btnPrimary {
                   );
                 })
               ),
+
+              // ROOM CARD INLINE
+              h("div", { className:"roomRow" },
+                h("input", {
+                  className:"roomInput",
+                  value: room,
+                  onChange:(e)=>setRoom(e.target.value),
+                  placeholder:"ROOM (ej: ANIL-2025)"
+                }),
+                h("button", { className:"btnPrimary", onClick: saveRoomNow }, "Guardar Room"),
+                h("button", { className:"btnPrimary", onClick: loadRoomNow }, "Cargar Room"),
+                !supa ? h("span", { className:"badge warn" }, "Supabase no configurado (opcional)") : null
+              ),
+
               h("div", { style:{marginTop:"10px"} },
                 h("p", { className:"muted" },
-                  "Tip: si una zona no trae nombre, saldrá como “Zona <id>”. Si queréis nombres perfectos (Ruta 1, Bosque Verde, etc.), se puede añadir un mapa fijo de Kanto."
+                  "Compartir rápido: subes todo → “Copiar link” → lo pegáis en Discord. Al abrirlo, se carga automático."
                 )
               )
             )
@@ -804,9 +910,9 @@ label.btnPrimary {
               h("div", { className:"footerNote" },
                 h("div", null,
                   h("div", { style:{fontWeight:800, marginBottom:"4px"} }, "Sugerencia gamer:"),
-                  h("div", { className:"muted" }, "Preparate Julián te va a reventar.")
+                  h("div", { className:"muted" }, "Sube JSON → Copiar link → pegadlo en Discord. Si queréis nube real, configurad Supabase.")
                 ),
-                h("div", { className:"kbd" }, "JSON → Import → Tabla → Flex")
+                h("div", { className:"kbd" }, "Local · Link · Room")
               )
             )
           )
