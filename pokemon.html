@@ -1,0 +1,353 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pokémon Añil — Route Tracker</title>
+    <style>
+      :root { color-scheme: dark; }
+      body { margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; background:#0b0f17; color:#e8eefc; }
+      .wrap { max-width: 1200px; margin: 0 auto; padding: 24px; }
+      h1 { margin: 0 0 6px; font-size: 22px; }
+      .sub { opacity:.8; margin: 0 0 18px; }
+      .grid { display:grid; grid-template-columns: 1fr; gap: 12px; }
+      .row { display:flex; gap: 12px; flex-wrap: wrap; }
+      .card { background:#121a2a; border:1px solid #22304f; border-radius:16px; padding:14px; }
+      .card h2 { margin:0 0 10px; font-size: 16px; }
+      button, .btn {
+        background:#1b2a46; border:1px solid #2a3b62; color:#e8eefc;
+        padding:8px 10px; border-radius:12px; cursor:pointer;
+      }
+      button:hover, .btn:hover { filter: brightness(1.1); }
+      input[type="file"] { display:none; }
+      .pill { display:inline-flex; gap:8px; align-items:center; padding:6px 10px; border-radius:999px;
+              background:#0e1524; border:1px solid #22304f; font-size:12px; opacity:.95; }
+      .ok { color:#7CFC98; }
+      .warn { color:#ffcc66; }
+      .bad { color:#ff6b6b; }
+      .muted { opacity:.75; font-size: 12px; }
+      table { width:100%; border-collapse: collapse; overflow:auto; }
+      th, td { border-bottom:1px solid #22304f; padding:10px 8px; text-align:left; vertical-align: top; }
+      th { position: sticky; top:0; background:#0e1524; z-index:1; }
+      .loc { font-weight:600; }
+      .cell { display:flex; flex-direction:column; gap:4px; }
+      .poke { display:flex; align-items:center; gap:10px; }
+      .sprite { width:40px; height:40px; image-rendering: pixelated; background:#0e1524; border:1px solid #22304f; border-radius:12px; }
+      .small { font-size:12px; opacity:.8; }
+      .tools { display:flex; gap:10px; flex-wrap: wrap; align-items:center; }
+      textarea { width:100%; min-height:140px; border-radius:14px; border:1px solid #22304f; background:#0e1524; color:#e8eefc; padding:10px; }
+      .right { margin-left:auto; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap" id="app"></div>
+
+    <script type="module">
+      import React, { useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18";
+      import { createRoot } from "https://esm.sh/react-dom@18/client";
+
+      const PLAYERS = ["julian", "nacho", "eladio", "josexmi"];
+      const STORAGE_KEY = "anil-route-tracker:v1";
+
+      function safeLower(s){ return String(s ?? "").trim().toLowerCase(); }
+
+      function loadState() {
+        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
+        catch { return {}; }
+      }
+      function saveState(state) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      }
+
+      // Sprite via PokeAPI sprites repo (rápido y sin keys). Si no existe, se queda vacío.
+      function spriteUrl(encounterSlug) {
+        if (!encounterSlug) return "";
+        // Algunos hacks usan nombres raros; para vanilla suele ir bien:
+        return `https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/pokemon/other/official-artwork/${encounterSlug}.png`;
+      }
+
+      // Para slug -> artwork id, necesitarías una tabla (PokeAPI). Para no depender de API,
+      // usamos fallback "no sprite" si no es un número.
+      // Como tu JSON trae "encounter":"bagon" (slug), usamos un sprite alternativo (showdown).
+      function spriteUrlFallbackSlug(slug){
+        if (!slug) return "";
+        return `https://play.pokemonshowdown.com/sprites/gen5/${slug}.png`;
+      }
+
+      function parseRunJson(text) {
+        const data = JSON.parse(text);
+        const locations = Array.isArray(data.locations) ? data.locations : [];
+        const customLocations = Array.isArray(data.customLocations) ? data.customLocations : [];
+
+        // Mapa de nombres custom por id (customLocations[].value)
+        const customNameById = {};
+        const customOrderById = {};
+        for (const c of customLocations) {
+          if (c && c.value != null) {
+            customNameById[String(c.value)] = c.name ?? String(c.value);
+            customOrderById[String(c.value)] = c.order ?? null;
+          }
+        }
+
+        // Normalizamos: id-> { displayName, encounter, nickname, status, rawId }
+        const byId = {};
+        for (const loc of locations) {
+          const id = String(loc.id);
+          const displayName = customNameById[id] || (loc.locationName ?? null) || `Zona ${id}`;
+          byId[id] = {
+            id,
+            displayName,
+            encounter: loc.encounter ?? null,
+            name: loc.name ?? null,
+            nickname: loc.nickname ?? null,
+            status: loc.status ?? null,
+            sortKey: customOrderById[id] ?? id
+          };
+        }
+
+        return {
+          gameId: data.id ?? "unknown",
+          byId,
+          customLocations
+        };
+      }
+
+      function statusTag(status) {
+        if (!status) return null;
+        const s = safeLower(status);
+        if (["dead","muerto","rip"].includes(s)) return ["Muerto", "bad"];
+        if (["boxed","caja"].includes(s)) return ["Caja", "warn"];
+        if (["alive","vivo","ok"].includes(s)) return ["Vivo", "ok"];
+        return [status, "warn"];
+      }
+
+      function App() {
+        const [state, setState] = useState(() => {
+          const saved = loadState();
+          // Estructura: { players: {julian: {rawJson, run}, ...}}
+          const players = saved.players || {};
+          return { players };
+        });
+
+        const fileInputs = useRef({});
+
+        useEffect(() => { saveState(state); }, [state]);
+
+        const unionLocationIds = useMemo(() => {
+          const ids = new Set();
+          for (const p of PLAYERS) {
+            const run = state.players?.[p]?.run;
+            if (run?.byId) Object.keys(run.byId).forEach(k => ids.add(k));
+          }
+          return Array.from(ids);
+        }, [state]);
+
+        const orderedLocationIds = useMemo(() => {
+          // Orden: si hay sortKey “c1/c0”, lo intentamos ordenar “natural”.
+          const entries = [];
+          for (const id of unionLocationIds) {
+            // Encontrar un ejemplo para sortKey/nombre
+            let example = null;
+            for (const p of PLAYERS) {
+              const loc = state.players?.[p]?.run?.byId?.[id];
+              if (loc) { example = loc; break; }
+            }
+            entries.push({
+              id,
+              name: example?.displayName || `Zona ${id}`,
+              sortKey: example?.sortKey ?? id
+            });
+          }
+
+          // Natural-ish sort: números primero, luego strings
+          const toTuple = (k) => {
+            const s = String(k);
+            const n = Number(s);
+            if (!Number.isNaN(n) && s.trim() !== "") return [0, n, s];
+            return [1, s, s];
+          };
+
+          return entries.sort((a,b)=>{
+            const A = toTuple(a.sortKey), B = toTuple(b.sortKey);
+            if (A[0] !== B[0]) return A[0]-B[0];
+            if (A[1] < B[1]) return -1;
+            if (A[1] > B[1]) return 1;
+            return String(a.name).localeCompare(String(b.name));
+          }).map(e=>e.id);
+        }, [unionLocationIds, state]);
+
+        function setPlayerRun(player, rawJson, run) {
+          setState(prev => ({
+            ...prev,
+            players: { ...(prev.players||{}), [player]: { rawJson, run } }
+          }));
+        }
+
+        function clearPlayer(player){
+          setState(prev => {
+            const next = { ...(prev.players||{}) };
+            delete next[player];
+            return { ...prev, players: next };
+          });
+        }
+
+        function onUpload(player, file) {
+          const reader = new FileReader();
+          reader.onload = () => {
+            try {
+              const raw = String(reader.result || "");
+              const run = parseRunJson(raw);
+              setPlayerRun(player, raw, run);
+            } catch (e) {
+              alert(`JSON inválido para ${player}: ${e?.message || e}`);
+            }
+          };
+          reader.readAsText(file);
+        }
+
+        function exportAll() {
+          const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
+          const a = document.createElement("a");
+          a.href = URL.createObjectURL(blob);
+          a.download = "anil-tracker-backup.json";
+          a.click();
+          URL.revokeObjectURL(a.href);
+        }
+
+        function importAll(text){
+          try{
+            const data = JSON.parse(text);
+            if (!data || typeof data !== "object") throw new Error("Formato inválido");
+            setState({ players: data.players || {} });
+          } catch(e){
+            alert(`Backup inválido: ${e?.message || e}`);
+          }
+        }
+
+        return (
+          React.createElement("div", { className:"grid" },
+            React.createElement("div", { className:"card" },
+              React.createElement("div", { className:"row", style:{alignItems:"center"} },
+                React.createElement("div", null,
+                  React.createElement("h1", null, "Pokémon Añil — Route Tracker (Multi)"),
+                  React.createElement("p", { className:"sub" }, "Subís vuestro JSON y aquí se ve quién ha capturado qué en cada zona. Se guarda en este navegador.")
+                ),
+                React.createElement("div", { className:"tools right" },
+                  React.createElement("button", { onClick: exportAll }, "Exportar backup"),
+                  React.createElement("label", { className:"btn" },
+                    "Importar backup",
+                    React.createElement("input", {
+                      type:"file", accept:"application/json",
+                      onChange:(e)=>{
+                        const f = e.target.files?.[0];
+                        if (!f) return;
+                        const r = new FileReader();
+                        r.onload = ()=> importAll(String(r.result||""));
+                        r.readAsText(f);
+                        e.target.value = "";
+                      }
+                    })
+                  ),
+                  React.createElement("button", { onClick: ()=>{
+                    if (confirm("¿Borrar TODO lo guardado en este navegador?")) {
+                      localStorage.removeItem(STORAGE_KEY);
+                      setState({ players:{} });
+                    }
+                  }}, "Reset total")
+                )
+              )
+            ),
+
+            React.createElement("div", { className:"card" },
+              React.createElement("h2", null, "Subir JSON por jugador"),
+              React.createElement("div", { className:"row" },
+                ...PLAYERS.map(p => {
+                  const has = !!state.players?.[p]?.run;
+                  const gameId = state.players?.[p]?.run?.gameId;
+                  return React.createElement("div", { key:p, className:"pill" },
+                    React.createElement("strong", null, p),
+                    has
+                      ? React.createElement("span", { className:"ok" }, `✓ cargado (${gameId||"?"})`)
+                      : React.createElement("span", { className:"muted" }, "sin JSON"),
+                    React.createElement("label", { className:"btn" },
+                      has ? "Reemplazar" : "Subir",
+                      React.createElement("input", {
+                        type:"file", accept:"application/json",
+                        onChange:(e)=>{
+                          const f = e.target.files?.[0];
+                          if (f) onUpload(p, f);
+                          e.target.value = "";
+                        }
+                      })
+                    ),
+                    React.createElement("button", { onClick:()=>clearPlayer(p), disabled:!has }, "Quitar")
+                  );
+                })
+              ),
+              React.createElement("p", { className:"muted" },
+                "Tip: si una zona no trae nombre, saldrá como “Zona <id>”. Si queréis nombres perfectos (Ruta 1, Bosque Verde, etc.), se puede añadir un mapa de Kanto en el código."
+              )
+            ),
+
+            React.createElement("div", { className:"card" },
+              React.createElement("h2", null, "Tabla comparativa"),
+              orderedLocationIds.length === 0
+                ? React.createElement("p", { className:"muted" }, "Subid al menos un JSON para ver datos.")
+                : React.createElement("div", { style:{overflow:"auto", borderRadius:"14px", border:"1px solid #22304f"} },
+                    React.createElement("table", null,
+                      React.createElement("thead", null,
+                        React.createElement("tr", null,
+                          React.createElement("th", null, "Zona / Ruta"),
+                          ...PLAYERS.map(p => React.createElement("th", { key:p }, p))
+                        )
+                      ),
+                      React.createElement("tbody", null,
+                        ...orderedLocationIds.map(id => {
+                          // Nombre de la zona: el primero que lo tenga
+                          let locName = `Zona ${id}`;
+                          for (const p of PLAYERS) {
+                            const loc = state.players?.[p]?.run?.byId?.[id];
+                            if (loc?.displayName) { locName = loc.displayName; break; }
+                          }
+                          return React.createElement("tr", { key:id },
+                            React.createElement("td", null,
+                              React.createElement("div", { className:"loc" }, locName),
+                              React.createElement("div", { className:"small" }, `id: ${id}`)
+                            ),
+                            ...PLAYERS.map(p => {
+                              const loc = state.players?.[p]?.run?.byId?.[id];
+                              if (!loc) return React.createElement("td", { key:p }, React.createElement("span", { className:"muted" }, "—"));
+                              const tag = statusTag(loc.status);
+                              const slug = safeLower(loc.encounter || "");
+                              return React.createElement("td", { key:p },
+                                React.createElement("div", { className:"cell" },
+                                  React.createElement("div", { className:"poke" },
+                                    React.createElement("img", {
+                                      className:"sprite",
+                                      src: spriteUrlFallbackSlug(slug),
+                                      alt: loc.name || loc.encounter || "",
+                                      onError:(e)=>{ e.currentTarget.style.display="none"; }
+                                    }),
+                                    React.createElement("div", null,
+                                      React.createElement("div", null, (loc.nickname ? `${loc.nickname} ` : "") + (loc.name || loc.encounter || "???")),
+                                      React.createElement("div", { className:"small" }, loc.encounter ? `(${loc.encounter})` : "")
+                                    )
+                                  ),
+                                  tag ? React.createElement("div", { className: tag[1] }, tag[0]) : null
+                                )
+                              );
+                            })
+                          );
+                        })
+                      )
+                    )
+                  )
+            )
+          )
+        );
+      }
+
+      createRoot(document.getElementById("app")).render(React.createElement(App));
+    </script>
+  </body>
+</html>
