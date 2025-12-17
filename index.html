@@ -301,7 +301,7 @@
 
     .teamGrid{
       display:grid;
-      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      grid-template-columns: repeat(5, minmax(220px, 1fr));
       gap: 12px;
     }
     @media (max-width: 980px){
@@ -928,26 +928,27 @@ create policy "public update matches" on public.matches for update using (true);
                     .slice()
                     .sort((a,b)=> (a.status===b.status ? (a.pokemon||"").localeCompare(b.pokemon||"") : (a.status||"").localeCompare(b.status||"")))
                     .map(t=>{
-                      return h("div", { key:t.id, className:"pokeCard" },
+                      return h("div", { key:t.id, className:"pokeCard", style:{flexDirection:"column", alignItems:"center"} },
                         h("img", { className:"sprite", src: spriteUrl(t.pokemon), alt: t.pokemon,
                           onError:(e)=>{ e.currentTarget.style.visibility="hidden"; }
                         }),
-                        h("div", { style:{flex:"1"} },
+                        h("div", { style:{flex:"1", width:"100%", textAlign:"center"} },
                           h("div", { className:"pokeName" }, t.pokemon),
                           h("div", { className:"pokeMeta" }, `Nv. ${t.level}`),
                           h("div", { className:"tag "+t.status }, t.status==="team"?"Equipo":(t.status==="boxed"?"Caja":"Muerto")),
-                          h("div", { className:"miniRow" },
-                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "team") }, "Equipo"),
-                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "boxed") }, "Caja"),
-                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "dead") }, "Muerto"),
-                            h("button", { className:"btn btnDanger", onClick:async()=>{
+                          h("div", { className:"miniRow", style:{justifyContent:"center"} },
+                            h("button", { className:"btn btnGhost", title:"Equipo", onClick:()=>setTeamStatus(t.id, "team") }, "⚔️"),
+                            h("button", { className:"btn btnGhost", title:"Caja", onClick:()=>setTeamStatus(t.id, "boxed") }, "📦"),
+                            h("button", { className:"btn btnGhost", title:"Muerto", onClick:()=>setTeamStatus(t.id, "dead") }, "💀"),
+                            h("button", { className:"btn btnDanger", title:"Borrar", onClick:async()=>{
                               if (!confirm("¿Eliminar este Pokémon de tu lista privada?")) return;
                               const { error } = await sb.from("team").delete().eq("id", t.id);
                               if (error) { toast.setMsg("❌ Error eliminando"); console.error(error); return; }
                               toast.setMsg("🗑️ Eliminado");
-                            } }, "Borrar")
+                            } }, "🗑️")
                           )
                         )
+                        
                       );
                     })
                 )
@@ -1443,7 +1444,6 @@ create policy "public update matches" on public.matches for update using (true);
   </script>
 </body>
 </html>
-
 
 
 
