@@ -1,927 +1,1449 @@
 <!doctype html>
 <html lang="es">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Pokédex Run Tracker — Pokémon Añil</title>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Pokémon Tracker — Añil</title>
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700&display=swap"
-      rel="stylesheet"
-    />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
 
-    <style>
-      :root {
-        --bg0: #070a12;
-        --bg1: #0a1020;
-        --panel: rgba(12, 18, 36, 0.82);
-        --panel2: rgba(9, 14, 28, 0.78);
-        --border: rgba(95, 127, 255, 0.25);
-        --border2: rgba(255, 255, 255, 0.08);
-        --text: #eaf1ff;
-        --muted: rgba(234, 241, 255, 0.72);
-        --muted2: rgba(234, 241, 255, 0.55);
+  <style>
+    :root{
+      --mono:"Press Start 2P", system-ui;
+      --sans:"Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
 
-        --pika: #ffd54a;
-        --blue: #4aa8ff;
-        --red: #ff4a7b;
-        --green: #62ff9b;
+      --bg:#0b1020;
+      --panel:rgba(255,255,255,.92);
+      --panel2:rgba(255,255,255,.82);
+      --ink:#10162a;
+      --muted:rgba(16,22,42,.65);
 
-        --shadow: 0 16px 60px rgba(0, 0, 0, 0.55);
-        --radius: 18px;
+      --red:#e60012;
+      --red2:#ff2a3a;
+      --blue:#1976ff;
+      --green:#17c964;
+      --yellow:#ffcc33;
+      --purple:#7c3aed;
 
-        --mono: "Press Start 2P", system-ui;
-        --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, Arial;
-      }
+      --shadow: 0 18px 50px rgba(0,0,0,.25);
+      --shadow2: 0 10px 22px rgba(0,0,0,.16);
+      --r: 18px;
+    }
 
-      * { box-sizing: border-box; }
-      html, body { height: 100%; }
-      body {
-        margin: 0;
-        color: var(--text);
-        font-family: var(--sans);
-        background:
-          radial-gradient(1000px 500px at 20% 0%, rgba(74,168,255,0.18), transparent 60%),
-          radial-gradient(800px 460px at 85% 10%, rgba(255,74,123,0.14), transparent 55%),
-          radial-gradient(900px 520px at 50% 100%, rgba(98,255,155,0.10), transparent 55%),
-          linear-gradient(180deg, var(--bg0), var(--bg1));
-        overflow-x: hidden;
-      }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--ink);
+      background:
+        radial-gradient(1100px 520px at 20% 0%, rgba(25,118,255,.18), transparent 60%),
+        radial-gradient(900px 520px at 90% 10%, rgba(255,42,58,.14), transparent 55%),
+        radial-gradient(900px 520px at 50% 110%, rgba(23,201,100,.12), transparent 55%),
+        linear-gradient(180deg, #060a14, var(--bg));
+      overflow-x:hidden;
+    }
+    .app{min-height:100%; display:flex; flex-direction:column}
+    .topbar{
+      position:sticky; top:0; z-index:50;
+      background: linear-gradient(180deg, var(--red), #b8000f);
+      color:#fff;
+      box-shadow: 0 10px 24px rgba(0,0,0,.25);
+      border-bottom: 1px solid rgba(255,255,255,.15);
+    }
+    .topbarInner{
+      max-width:1200px; margin:0 auto; padding:12px 16px;
+      display:flex; align-items:center; gap:14px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:12px; min-width: 220px;
+      font-family:var(--mono);
+      letter-spacing:.4px;
+      font-size:12px;
+      user-select:none;
+    }
+    .brand .ball{
+      width:34px; height:34px; border-radius:999px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.6), rgba(255,255,255,0) 45%),
+        linear-gradient(180deg, #ff5562, #b8000f);
+      border: 2px solid rgba(255,255,255,.9);
+      box-shadow: inset 0 -6px 0 rgba(0,0,0,.18), 0 10px 20px rgba(0,0,0,.2);
+      position:relative;
+      flex:0 0 auto;
+    }
+    .brand .ball:before{
+      content:""; position:absolute; left:3px; right:3px; top:50%;
+      height:2px; background: rgba(255,255,255,.92);
+      transform: translateY(-50%);
+      opacity:.9;
+    }
+    .brand .ball:after{
+      content:""; position:absolute; left:50%; top:50%;
+      width:10px; height:10px; border-radius:999px;
+      transform: translate(-50%,-50%);
+      background: rgba(255,255,255,.95);
+      box-shadow: inset 0 0 0 3px rgba(0,0,0,.15);
+    }
 
-      body::before {
-        content: "";
-        position: fixed;
-        inset: 0;
-        pointer-events: none;
-        opacity: 0.08;
-        background-image:
-          radial-gradient(circle at 18px 18px, rgba(255,255,255,0.55) 0 2px, transparent 3px),
-          radial-gradient(circle at 18px 18px, transparent 0 10px, rgba(255,255,255,0.22) 11px 12px, transparent 13px),
-          linear-gradient(transparent 0 14px, rgba(255,255,255,0.16) 15px 16px, transparent 17px);
-        background-size: 52px 52px;
-        filter: blur(0.1px);
-      }
+    .tabs{display:flex; gap:8px; flex-wrap:wrap}
+    .tab{
+      appearance:none; border: 1px solid rgba(255,255,255,.25);
+      background: rgba(255,255,255,.10);
+      color:#fff;
+      padding:10px 12px;
+      border-radius: 12px;
+      font-weight:800;
+      cursor:pointer;
+      display:flex; align-items:center; gap:8px;
+      transition: transform .08s ease, filter .15s ease, background .15s ease;
+      user-select:none;
+    }
+    .tab:hover{filter:brightness(1.08)}
+    .tab:active{transform:translateY(1px)}
+    .tab.active{
+      background: rgba(255,255,255,.92);
+      color: #8b000d;
+      border-color: rgba(255,255,255,.95);
+    }
 
-      body::after{
-        content:"";
-        position: fixed;
-        inset: 0;
-        pointer-events:none;
-        opacity: 0.08;
-        background: repeating-linear-gradient(
-          to bottom,
-          rgba(255,255,255,0.0) 0px,
-          rgba(255,255,255,0.0) 3px,
-          rgba(0,0,0,0.35) 4px
-        );
-        mix-blend-mode: overlay;
-      }
+    .right{
+      margin-left:auto;
+      display:flex; align-items:center; gap:10px; flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .pill{
+      background: rgba(255,255,255,.12);
+      border:1px solid rgba(255,255,255,.25);
+      padding:8px 10px;
+      border-radius:999px;
+      font-weight:800;
+      display:flex; align-items:center; gap:8px;
+    }
+    .linkBtn{
+      appearance:none; border:1px solid rgba(255,255,255,.25);
+      background: rgba(0,0,0,.18);
+      color:#fff;
+      padding:8px 10px;
+      border-radius:12px;
+      cursor:pointer;
+      font-weight:800;
+    }
+    .linkBtn:hover{filter:brightness(1.08)}
+    .linkBtn:active{transform:translateY(1px)}
 
-      .wrap { max-width: 1240px; margin: 0 auto; padding: 22px 18px 34px; }
+    .wrap{
+      width:100%;
+      max-width:1200px;
+      margin: 0 auto;
+      padding: 18px 16px 30px;
+      flex:1;
+    }
 
-      .hero {
-        position: relative;
-        border-radius: 26px;
-        overflow: hidden;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--border);
-        background: linear-gradient(135deg, rgba(74,168,255,0.12), rgba(255,74,123,0.10));
-      }
-      .hero .banner {
-        height: 170px;
-        background-image:
-          linear-gradient(180deg, rgba(0,0,0,0.1), rgba(0,0,0,0.65)),
-          url("https://upload.wikimedia.org/wikipedia/commons/thumb/9/98/International_Pokémon_logo.svg/1200px-International_Pokémon_logo.svg.png");
-        background-size: cover;
-        background-position: center;
-        filter: saturate(1.05) contrast(1.05);
-      }
-      .hero .content {
-        padding: 16px 18px 18px;
-        background: rgba(5, 8, 16, 0.62);
-        backdrop-filter: blur(10px);
-      }
-      .heroTop {
-        display:flex;
-        gap: 14px;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-      }
-      .brand {
-        display:flex;
-        align-items:center;
-        gap: 12px;
-        min-width: 260px;
-      }
-      .logo {
-        width: 46px;
-        height: 46px;
-        border-radius: 16px;
-        border: 1px solid var(--border);
-        background:
-          radial-gradient(circle at 35% 35%, rgba(255,255,255,0.18), transparent 55%),
-          linear-gradient(135deg, rgba(255,213,74,0.22), rgba(74,168,255,0.14));
-        display:grid;
-        place-items:center;
-        box-shadow: 0 10px 24px rgba(0,0,0,0.35);
-      }
-      .titleBlock h1{
-        font-family: var(--mono);
-        font-size: 14px;
-        margin: 0 0 4px;
-        letter-spacing: 0.5px;
-        text-shadow: 0 2px 0 rgba(0,0,0,0.55);
-      }
-      .titleBlock p{
-        margin: 0;
-        color: var(--muted);
-        font-size: 13px;
-      }
-      .heroActions{
-        display:flex;
-        gap: 10px;
-        flex-wrap: wrap;
-        align-items:center;
-        justify-content: flex-end;
-      }
+    .grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+    }
+    @media (max-width: 980px){
+      .grid{grid-template-columns:1fr}
+      .brand{min-width:unset}
+      .right{width:100%}
+    }
 
-      .grid { display:grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+    .dashboard-grid{
+      display:grid;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
 
-      .card {
-        background: var(--panel);
-        border: 1px solid var(--border);
-        border-radius: var(--radius);
-        box-shadow: var(--shadow);
-        overflow: hidden;
-        position: relative;
-      }
-      .card::before{
-        content:"";
-        position:absolute; inset:0;
-        pointer-events:none;
-        background: radial-gradient(900px 240px at 30% 0%, rgba(255,213,74,0.10), transparent 55%);
-        opacity: .9;
-      }
-      .cardHead{
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        gap: 12px;
-        padding: 14px 14px 10px;
-        border-bottom: 1px solid var(--border2);
-        background: linear-gradient(180deg, rgba(255,255,255,0.02), transparent);
-        position: relative;
-        z-index: 1;
-      }
-      .cardHead h2{
-        margin:0;
-        font-size: 14px;
-        letter-spacing: .2px;
-      }
-      .cardBody{
-        padding: 12px 14px 14px;
-        position: relative;
-        z-index: 1;
-      }
-      .muted { color: var(--muted); font-size: 12px; }
-      .muted2 { color: var(--muted2); font-size: 12px; }
+    .card{
+      width: 100%;
+      background: var(--panel);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(16,22,42,.08);
+    }
+    .cardlader{
+      width: 100%;
+      height: fit-content;
+      background: var(--panel);
+      border-radius: var(--r);
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(16,22,42,.08);
+    }
+    .cardHead{
+      padding:14px 14px 12px;
+      display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
+      border-bottom:1px solid rgba(16,22,42,.08);
+      
+    }
+    .cardHead h2{
+      margin:0;
+      font-size: 18px;
+      letter-spacing:.2px;
+    }
+    .sub{
+      margin-top:6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height:1.35;
+    }
+    .cardBody{padding:14px}
+    .muted{color:var(--muted); font-size:13px}
 
-      button, .btn {
-        appearance: none;
-        border: 1px solid var(--border);
-        background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.02));
-        color: var(--text);
-        padding: 10px 12px;
-        border-radius: 14px;
-        cursor: pointer;
-        font-weight: 700;
-        letter-spacing: .2px;
-        transition: transform .08s ease, filter .15s ease, border-color .15s ease;
-        display:inline-flex;
-        align-items:center;
-        gap: 9px;
-        user-select:none;
-      }
-      button:hover, .btn:hover { filter: brightness(1.12); border-color: rgba(95,127,255,0.45); }
-      button:active, .btn:active { transform: translateY(1px) scale(0.99); }
-      button:disabled { opacity: .45; cursor: not-allowed; filter: none; }
+    .btn{
+      appearance:none;
+      border:1px solid rgba(16,22,42,.12);
+      background: rgba(255,255,255,.9);
+      color: var(--ink);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor:pointer;
+      font-weight:900;
+      display:inline-flex; align-items:center; justify-content:center; gap:8px;
+      transition: transform .08s ease, filter .15s ease;
+      user-select:none;
+      box-shadow: var(--shadow2);
+    }
+    .btn:hover{filter:brightness(1.04)}
+    .btn:active{transform:translateY(1px)}
+    .btnPrimary{
+      background: linear-gradient(180deg, rgba(255, 220, 120, .92), rgba(255, 193, 70, .92));
+      border-color: rgba(255, 193, 70, .65);
+    }
+    .btnRed{
+      background: linear-gradient(180deg, rgba(255, 98, 112, .92), rgba(230, 0, 18, .92));
+      border-color: rgba(230,0,18,.45);
+      color:#fff;
+    }
+    .btnBlue{
+      background: linear-gradient(180deg, rgba(75, 149, 255, .92), rgba(25, 118, 255, .92));
+      border-color: rgba(25,118,255,.45);
+      color:#fff;
+    }
+    .btnGhost{
+      background: rgba(255,255,255,.65);
+    }
+    .btnDanger{
+      background: linear-gradient(180deg, rgba(255, 76, 120, .92), rgba(200, 0, 60, .92));
+      border-color: rgba(200,0,60,.45);
+      color:#fff;
+    }
+    .btn:disabled{opacity:.55; cursor:not-allowed; filter:none; box-shadow:none}
 
-      /* BOTÓN PRINCIPAL (button + label) – afinado */
-      .btnPrimary {
-        position: relative;
-        display: inline-flex;
-        align-items: center;
-        justify-content: center;
-        gap: 10px;
+    .row{display:flex; gap:10px; flex-wrap:wrap; align-items:center}
+    .rowBetween{display:flex; justify-content:space-between; gap:10px; flex-wrap:wrap; align-items:center}
 
-        padding: 10px 14px;
-        border-radius: 16px;
+    .input, .select, .textarea{
+      width:100%;
+      padding:10px 12px;
+      border-radius: 12px;
+      border: 1px solid rgba(16,22,42,.15);
+      background: rgba(255,255,255,.92);
+      font-family: var(--sans);
+      font-weight:700;
+      color: var(--ink);
+      outline:none;
+    }
+    .textarea{min-height: 90px; resize: vertical}
+    .field{display:flex; flex-direction:column; gap:6px}
+    .label{font-size:12px; font-weight:900; color: rgba(16,22,42,.72); text-transform:uppercase; letter-spacing:.5px}
 
-        font-weight: 800;
-        letter-spacing: 0.35px;
-        text-transform: uppercase;
-        font-size: 12px;
+    .badges{
+      display:grid;
+      grid-template-columns: repeat(8, minmax(34px, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+    .badgeBtn{
+      border-radius: 14px;
+      border: 1px solid rgba(16,22,42,.12);
+      background: rgba(255,255,255,.85);
+      padding: 10px 0;
+      cursor:pointer;
+      font-weight: 900;
+      box-shadow: var(--shadow2);
+      transition: transform .08s ease, filter .15s ease;
+      user-select:none;
+      position:relative;
+    }
+    .badgeBtn:hover{filter:brightness(1.03)}
+    .badgeBtn:active{transform:translateY(1px)}
+    .badgeBtn.on{
+      background: linear-gradient(180deg, rgba(255, 220, 120, .92), rgba(255, 193, 70, .92));
+      border-color: rgba(255, 193, 70, .65);
+    }
 
-        cursor: pointer;
-        user-select: none;
+    .kpis{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(160px, 1fr));
+      gap: 12px;
+      margin-top: 12px;
+    }
+    @media (max-width: 540px){
+      .kpis{grid-template-columns:1fr}
+    }
+    .kpi{
+      border-radius: var(--r);
+      background: rgba(255,255,255,.85);
+      border:1px solid rgba(16,22,42,.08);
+      box-shadow: var(--shadow2);
+      padding: 12px 14px;
+    }
+    .kpi .t{font-weight:900; color: rgba(16,22,42,.75); font-size:12px; text-transform:uppercase; letter-spacing:.5px}
+    .kpi .v{font-size: 30px; font-weight: 900; margin-top: 10px}
+    .kpi .v.red{color:var(--red)}
+    .kpi .v.blue{color:var(--blue)}
+    .kpi .v.purple{color:var(--purple)}
 
-        color: #2b2305;
+    .teamGrid{
+      display:grid;
+      grid-template-columns: repeat(3, minmax(220px, 1fr));
+      gap: 12px;
+    }
+    @media (max-width: 980px){
+      .teamGrid{grid-template-columns: repeat(2, minmax(220px, 1fr))}
+    }
+    @media (max-width: 560px){
+      .teamGrid{grid-template-columns: 1fr}
+    }
+    .pokeCard{
+      border-radius: var(--r);
+      background: rgba(255,255,255,.86);
+      border:1px solid rgba(16,22,42,.08);
+      box-shadow: var(--shadow2);
+      padding: 12px;
+      display:flex;
+      gap: 12px;
+      align-items:flex-start;
+    }
+    .sprite{
+      width:56px; height:56px;
+      border-radius: 16px;
+      background: rgba(16,22,42,.04);
+      border: 1px solid rgba(16,22,42,.10);
+      image-rendering: pixelated;
+      flex:0 0 auto;
+    }
+    .pokeName{font-weight: 900; font-size: 16px; line-height:1.1}
+    .pokeMeta{margin-top:3px; color: var(--muted); font-weight: 800; font-size: 13px}
+    .tag{
+      display:inline-flex; align-items:center;
+      padding:6px 10px;
+      border-radius: 999px;
+      font-weight: 900;
+      font-size: 12px;
+      border:1px solid rgba(16,22,42,.10);
+      background: rgba(255,255,255,.75);
+      margin-top: 8px;
+      width: fit-content;
+    }
+    .tag.team{color: rgba(23, 110, 55, 1); border-color: rgba(23, 201, 100, .28); background: rgba(23, 201, 100, .14)}
+    .tag.boxed{color: rgba(135, 60, 180, 1); border-color: rgba(124, 58, 237, .28); background: rgba(124, 58, 237, .12)}
+    .tag.dead{color: rgba(170, 0, 30, 1); border-color: rgba(230, 0, 18, .25); background: rgba(230, 0, 18, .10)}
+    .miniRow{display:flex; gap:8px; flex-wrap:wrap; margin-top: 10px}
 
-        background:
-          linear-gradient(180deg,
-            rgba(255, 232, 140, 0.75),
-            rgba(255, 205, 90, 0.78)
-          );
+    .tableWrap{
+      overflow:auto;
+      border-radius: var(--r);
+      border: 1px solid rgba(16,22,42,.10);
+      background: rgba(255,255,255,.70);
+      box-shadow: var(--shadow2);
+    }
+    table{border-collapse:collapse; width:100%; min-width: 980px}
+    th,td{padding: 10px 10px; border-bottom: 1px solid rgba(16,22,42,.08); text-align:left; vertical-align:top}
+    th{
+      position:sticky; top:0; z-index:2;
+      background: rgba(255,255,255,.96);
+      font-size: 12px;
+      text-transform:uppercase;
+      letter-spacing:.5px;
+      color: rgba(16,22,42,.7);
+    }
+    th.stickyLeft, td.stickyLeft{
+      position:sticky;
+      left:0;
+      z-index:3;
+      background: rgba(255,255,255,.96);
+      border-right: 1px solid rgba(16,22,42,.08);
+      min-width: 220px;
+    }
+    .capCell{
+      display:flex; gap: 10px; align-items:flex-start;
+    }
+    .capName{font-weight: 900}
+    .capSmall{color: var(--muted); font-weight:800; font-size:12px; margin-top:3px}
+    .capActions{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    .chip{
+      display:inline-flex; align-items:center; gap:6px;
+      padding:6px 10px;
+      border-radius: 999px;
+      border:1px solid rgba(16,22,42,.10);
+      background: rgba(255,255,255,.72);
+      font-weight:900;
+      font-size:12px;
+    }
 
-        border: 1px solid rgba(255, 210, 110, 0.55);
+    .split{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    @media (max-width: 980px){
+      .split{grid-template-columns:1fr}
+    }
 
-        box-shadow:
-          0 3px 0 rgba(180, 140, 40, 0.7),
-          0 8px 22px rgba(255, 210, 120, 0.28),
-          inset 0 1px 0 rgba(255,255,255,0.45);
+    .toast{
+      position: fixed;
+      bottom: 18px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(16,22,42,.92);
+      color: #fff;
+      padding: 10px 12px;
+      border-radius: 14px;
+      box-shadow: 0 16px 40px rgba(0,0,0,.25);
+      font-weight: 900;
+      z-index: 200;
+      max-width: 92vw;
+      display:flex; gap:10px; align-items:center;
+      border: 1px solid rgba(255,255,255,.14);
+    }
 
-        backdrop-filter: blur(2px);
+    .modalBack{
+      position:fixed; inset:0; z-index:120;
+      background: rgba(0,0,0,.55);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding: 16px;
+    }
+    .modal{
+      width:min(860px, 96vw);
+      background: rgba(255,255,255,.96);
+      border-radius: 20px;
+      border:1px solid rgba(16,22,42,.12);
+      box-shadow: 0 24px 70px rgba(0,0,0,.35);
+      overflow:hidden;
+    }
+    .modalHead{
+      padding: 14px 14px 10px;
+      border-bottom: 1px solid rgba(16,22,42,.10);
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(255,255,255,.78));
+    }
+    .modalHead h3{margin:0; font-size: 16px}
+    .modalBody{padding: 14px}
+    .small{font-size: 12px; color: var(--muted); line-height:1.35}
+    .code{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono","Courier New", monospace;
+      background: rgba(16,22,42,.06);
+      border: 1px solid rgba(16,22,42,.12);
+      border-radius: 14px;
+      padding: 12px;
+      white-space: pre-wrap;
+      overflow:auto;
+    }
 
-        transition:
-          transform 0.08s ease,
-          box-shadow 0.08s ease,
-          filter 0.15s ease,
-          background 0.15s ease;
-      }
-      .btnPrimary:hover { filter: brightness(1.05); }
-      .btnPrimary:active {
-        transform: translateY(2px);
-        box-shadow:
-          0 2px 0 rgba(180, 140, 40, 0.7),
-          0 5px 14px rgba(255, 210, 120, 0.22),
-          inset 0 1px 0 rgba(255,255,255,0.35);
-      }
-      .btnPrimary:focus-visible {
-        outline: none;
-        box-shadow:
-          0 0 0 2px rgba(74, 168, 255, 0.55),
-          0 3px 0 rgba(180, 140, 40, 0.7),
-          0 8px 22px rgba(255, 210, 120, 0.28);
-      }
-      label.btnPrimary { cursor: pointer; }
-      .btnPrimary .ico {
-        opacity: 0.9;
-        filter: drop-shadow(0 1px 0 rgba(255,255,255,0.4));
-      }
+    /* login */
+    .loginWrap{
+      max-width: 960px;
+      margin: 22px auto;
+      padding: 0 16px 24px;
+    }
+    .loginHero{
+      background: rgba(255,255,255,.92);
+      border-radius: 22px;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(255,255,255,.28);
+      overflow:hidden;
+    }
+    .loginBanner{
+      height: 160px;
+      background:
+        linear-gradient(180deg, rgba(0,0,0,.08), rgba(0,0,0,.36)),
+        radial-gradient(900px 260px at 18% 20%, rgba(255,204,51,.45), transparent 55%),
+        radial-gradient(700px 240px at 80% 40%, rgba(25,118,255,.38), transparent 55%),
+        linear-gradient(135deg, var(--red), #b8000f);
+      display:flex;
+      align-items:flex-end;
+      padding: 14px;
+      color:#fff;
+    }
+    .loginBanner h1{
+      margin:0;
+      font-family: var(--mono);
+      font-size: 12px;
+      letter-spacing:.5px;
+      line-height:1.35;
+    }
+    .loginBody{padding: 14px}
+    .loginRow{display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap}
+    .loginRow > *{flex: 1 1 220px}
+  </style>
+</head>
+<body>
+  <div id="root"></div>
 
-      .btnDanger{
-        border-color: rgba(255,74,123,0.35);
-        background: linear-gradient(180deg, rgba(255,74,123,0.18), rgba(255,74,123,0.06));
-      }
+  <script type="module">
+    import React, { useEffect, useMemo, useRef, useState } from "https://esm.sh/react@18";
+    import { createRoot } from "https://esm.sh/react-dom@18/client";
+    import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
-      input[type="file"] { display:none; }
+    /**********************
+     * CONFIG (EDIT HERE)
+     **********************/
+    const PLAYERS = ["Julian","Nacho","Eladio","Josexmi"]; // <- cambia aquí el número/nombres
+    const APP_ROOM = "anil-main"; // una sola partida compartida (puedes cambiarlo)
+    const SUPABASE_URL = "https://ctmumhisojwrcikmiazf.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_LxX3CJP8gJWbqQADRuJfeg_-P6kWy6m";
 
-      .pills {
-        display:grid;
-        grid-template-columns: repeat(4, minmax(220px, 1fr));
-        gap: 12px;
-      }
-      @media (max-width: 980px){
-        .pills { grid-template-columns: repeat(2, minmax(240px, 1fr)); }
-      }
-      @media (max-width: 540px){
-        .pills { grid-template-columns: 1fr; }
-        .titleBlock h1{ font-size: 12px; }
-      }
+    /**********************
+     * STORAGE KEYS
+     **********************/
+    const LS_PLAYER = "anil:v3:player";
+    const LS_TAB = "anil:v3:tab";
 
-      .pill {
-        border-radius: 18px;
-        border: 1px solid var(--border);
-        background: var(--panel2);
-        padding: 12px;
-        display:flex;
-        flex-direction: column;
-        gap: 10px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.35);
-      }
-      .pillTop{
-        display:flex;
-        align-items:center;
-        justify-content: space-between;
-        gap: 10px;
-      }
-      .playerName{
-        display:flex;
-        align-items:center;
-        gap: 10px;
-        font-weight: 800;
-        text-transform: capitalize;
-      }
-      .badge {
-        display:inline-flex;
-        align-items:center;
-        gap: 6px;
-        font-size: 12px;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid var(--border2);
-        background: rgba(0,0,0,0.25);
-        color: var(--muted);
-      }
-      .badge.ok { color: rgba(98,255,155,0.95); border-color: rgba(98,255,155,0.25); }
-      .badge.warn { color: rgba(255,213,74,0.95); border-color: rgba(255,213,74,0.25); }
+    const STAGES = [
+      { id:"pre3", name:"Antes del 3º Gimnasio", reward:"+1 captura extra" },
+      { id:"pre6", name:"Antes del 6º Gimnasio", reward:"+1 captura extra" },
+      { id:"preL", name:"Antes de la Liga Pokémon", reward:"+1 captura extra" }
+    ];
 
-      .pillActions{
-        display:flex;
-        gap: 10px;
-        flex-wrap: wrap;
-      }
+    const DEFAULT_ROUTES = [
+      "Pueblo Paleta","Ciudad Verde","Ruta 1","Ruta 2 (Sur)","Bosque Verde","Túnel Diglett","Ruta 2 (Norte)",
+      "Ciudad Plateada","Ruta 3","Monte Luna","Ruta 4","Ciudad Celeste","Ruta 5","Ruta 6","Túnel Subterráneo",
+      "Ciudad Carmín","Ruta 11","Cueva Diglett (Salida)","Ruta 9","Túnel Roca","Ruta 10","Central Eléctrica",
+      "Lavanda","Torre Pokémon","Ruta 8","Ruta 7","Ciudad Azafrán","Ciudad Azulona","Ruta 16","Ruta 17","Ruta 18",
+      "Ruta 12","Ruta 13","Ruta 14","Ruta 15","Ciudad Fucsia","Zona Safari","Ruta 19","Ruta 20","Islas Espuma",
+      "Isla Canela","Mansión Pokémon","Ruta 21","Ruta 22","Ruta 23","Calle Victoria","Meseta Añil","Ruta 24","Ruta 25",
+      "Cueva Celeste"
+    ];
 
-      .tableWrap{
-        border-radius: 18px;
-        border: 1px solid var(--border);
-        overflow: auto;
-        background: rgba(0,0,0,0.22);
-      }
-      table { width:100%; border-collapse: collapse; min-width: 860px; }
-      th, td {
-        border-bottom: 1px solid rgba(255,255,255,0.08);
-        padding: 12px 10px;
-        text-align:left;
-        vertical-align: top;
-      }
-      th {
-        position: sticky;
-        top: 0;
-        z-index: 2;
-        background: rgba(10, 16, 32, 0.92);
-        backdrop-filter: blur(8px);
-        font-size: 12px;
-        letter-spacing: .4px;
-        text-transform: uppercase;
-        color: rgba(234,241,255,0.85);
-      }
-      .locTitle { font-weight: 800; }
-      .locMeta { margin-top: 3px; font-size: 12px; color: var(--muted2); }
+    /**********************
+     * HELPERS
+     **********************/
+    const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    const h = React.createElement;
+    const safe = (v)=> String(v ?? "").trim();
+    const lower = (v)=> safe(v).toLowerCase();
 
-      .cell { display:flex; flex-direction: column; gap: 7px; }
-      .pokeRow { display:flex; align-items:center; gap: 10px; }
+    function spriteUrl(name){
+      const slug = lower(name).replace(/[^a-z0-9-]/g,"").replace(/\s+/g,"");
+      if (!slug) return "";
+      return `https://play.pokemonshowdown.com/sprites/gen5/${slug}.png`;
+    }
 
-      .sprite {
-        width: 44px;
-        height: 44px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background:
-          radial-gradient(circle at 35% 35%, rgba(255,255,255,0.12), transparent 55%),
-          rgba(0,0,0,0.25);
-        image-rendering: pixelated;
-        flex: 0 0 auto;
-      }
-
-      .pokeName { font-weight: 800; line-height: 1.1; }
-      .pokeSlug { font-size: 12px; color: var(--muted2); }
-
-      .statusTag{
-        font-size: 12px;
-        font-weight: 800;
-        padding: 6px 10px;
-        border-radius: 999px;
-        border: 1px solid rgba(255,255,255,0.10);
-        background: rgba(0,0,0,0.25);
-        width: fit-content;
-      }
-      .statusTag.ok{ color: rgba(98,255,155,0.95); border-color: rgba(98,255,155,0.25); }
-      .statusTag.warn{ color: rgba(255,213,74,0.95); border-color: rgba(255,213,74,0.25); }
-      .statusTag.bad{ color: rgba(255,74,123,0.95); border-color: rgba(255,74,123,0.25); }
-
-      .footerNote{
-        display:flex;
-        gap: 12px;
-        flex-wrap: wrap;
-        justify-content: space-between;
-        align-items: center;
-      }
-      .kbd{
-        font-family: var(--mono);
-        font-size: 10px;
-        opacity: .85;
-        padding: 8px 10px;
-        border-radius: 12px;
-        border: 1px dashed rgba(255,255,255,0.14);
-        background: rgba(0,0,0,0.18);
-      }
-
-      .ico { width: 18px; height: 18px; display:inline-block; }
-      .icoBig { width: 22px; height: 22px; }
-      .ico svg { width:100%; height:100%; display:block; }
-
-      /* Inputs para Room */
-      .roomRow{
-        display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-        margin-top: 10px;
-      }
-      .roomInput{
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(255,255,255,0.12);
-        background: rgba(0,0,0,0.25);
-        color: white;
-        min-width: 220px;
-      }
-    </style>
-  </head>
-
-  <body>
-    <div class="wrap" id="app"></div>
-
-    <script type="module">
-      import React, { useEffect, useMemo, useState } from "https://esm.sh/react@18";
-      import { createRoot } from "https://esm.sh/react-dom@18/client";
-      import LZString from "https://esm.sh/lz-string@1.5.0";
-      import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-
-      const PLAYERS = ["julian", "nacho", "eladio", "josexmi"];
-      const STORAGE_KEY = "anil-route-tracker:v3-share";
-
-      // ====== OPCIÓN 3 (online) — Supabase (opcional) ======
-      // Si NO pones credenciales, no pasa nada: la web funciona igual.
-      const SUPABASE_URL = "https://ctmumhisojwrcikmiazf.supabase.co";      // <-- pega aquí tu URL
-      const SUPABASE_ANON_KEY = "sb_publishable_LxX3CJP8gJWbqQADRuJfeg_-P6kWy6m"; // <-- pega aquí tu anon key
-
-      const supa = (SUPABASE_URL && SUPABASE_ANON_KEY) ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
-
-      async function saveRoom(room, state){
-        if (!supa) return { ok:false, error:"Supabase no configurado" };
-        room = String(room || "").trim();
-        if (!room) return { ok:false, error:"Room vacío" };
-        const payload = { room, state, updated_at: new Date().toISOString() };
-        const { error } = await supa.from("runs").upsert(payload, { onConflict: "room" });
-        return error ? { ok:false, error: error.message } : { ok:true };
-      }
-
-      async function loadRoom(room){
-        if (!supa) return { ok:false, error:"Supabase no configurado" };
-        room = String(room || "").trim();
-        if (!room) return { ok:false, error:"Room vacío" };
-        const { data, error } = await supa.from("runs").select("state").eq("room", room).single();
-        if (error) return { ok:false, error: error.message };
-        return { ok:true, state: data?.state || {} };
-      }
-
-      // ====== OPCIÓN 2 (link compartible) — hash comprimido ======
-      function encodeStateToHash(state){
-        const json = JSON.stringify(state || {});
-        const packed = LZString.compressToEncodedURIComponent(json);
-        return `#rt=${packed}`;
-      }
-
-      function decodeStateFromHash(hash){
-        try{
-          const m = (hash || "").match(/#rt=([^&]+)/);
-          if (!m) return null;
-          const json = LZString.decompressFromEncodedURIComponent(m[1]);
-          if (!json) return null;
-          return JSON.parse(json);
-        }catch{
-          return null;
+    function pairs(players){
+      const ps = [...players];
+      const out = [];
+      for (let i=0;i<ps.length;i++){
+        for (let j=i+1;j<ps.length;j++){
+          out.push([ps[i], ps[j]]);
         }
       }
+      return out;
+    }
 
-      // Helpers
-      function h(type, props, ...children){ return React.createElement(type, props, ...children); }
-      function safeLower(s){ return String(s ?? "").trim().toLowerCase(); }
+    function useToast(){
+      const [msg, setMsg] = useState(null);
+      useEffect(()=>{
+        if (!msg) return;
+        const t = setTimeout(()=>setMsg(null), 2500);
+        return ()=>clearTimeout(t);
+      }, [msg]);
+      return { msg, setMsg };
+    }
 
-      // Icons SIN JSX
-      const Icons = {
-        pokeball: () => h("span", { className:"ico icoBig", "aria-hidden":"true" },
-          h("svg", { viewBox:"0 0 24 24", fill:"none" },
-            h("circle", { cx:"12", cy:"12", r:"9", stroke:"rgba(255,255,255,0.65)", strokeWidth:"1.6" }),
-            h("path", { d:"M3.5 12h17", stroke:"rgba(255,255,255,0.45)", strokeWidth:"1.6", strokeLinecap:"round" }),
-            h("circle", { cx:"12", cy:"12", r:"2.5", stroke:"rgba(255,255,255,0.8)", strokeWidth:"1.6" }),
-            h("path", { d:"M12 3a9 9 0 0 1 9 9", stroke:"rgba(255,213,74,0.8)", strokeWidth:"1.6", strokeLinecap:"round" }),
-            h("path", { d:"M3 12a9 9 0 0 0 9 9", stroke:"rgba(255,74,123,0.75)", strokeWidth:"1.6", strokeLinecap:"round" })
-          )
-        ),
-        upload: () => h("span", { className:"ico", "aria-hidden":"true" },
-          h("svg", { viewBox:"0 0 24 24", fill:"none" },
-            h("path", { d:"M12 15V4", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M8.5 7.5 12 4l3.5 3.5", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round", strokeLinejoin:"round" }),
-            h("path", { d:"M5 15.5v2A2.5 2.5 0 0 0 7.5 20h9A2.5 2.5 0 0 0 19 17.5v-2", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" })
-          )
-        ),
-        download: () => h("span", { className:"ico", "aria-hidden":"true" },
-          h("svg", { viewBox:"0 0 24 24", fill:"none" },
-            h("path", { d:"M12 4v10", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M8.5 11.5 12 14.9l3.5-3.4", stroke:"rgba(234,241,255,0.9)", strokeWidth:"1.8", strokeLinecap:"round", strokeLinejoin:"round" }),
-            h("path", { d:"M5 19h14", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" })
-          )
-        ),
-        trash: () => h("span", { className:"ico", "aria-hidden":"true" },
-          h("svg", { viewBox:"0 0 24 24", fill:"none" },
-            h("path", { d:"M9 4h6", stroke:"rgba(234,241,255,0.85)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M6.5 7.2h11", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M9 7.2v12.2", stroke:"rgba(234,241,255,0.45)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M15 7.2v12.2", stroke:"rgba(234,241,255,0.45)", strokeWidth:"1.8", strokeLinecap:"round" }),
-            h("path", { d:"M7.2 7.2l.6 13A2 2 0 0 0 9.8 22h4.4a2 2 0 0 0 2-1.8l.6-13", stroke:"rgba(234,241,255,0.55)", strokeWidth:"1.8", strokeLinejoin:"round" })
-          )
-        ),
-        bolt: () => h("span", { className:"ico", "aria-hidden":"true" },
-          h("svg", { viewBox:"0 0 24 24", fill:"none" },
-            h("path", { d:"M13 2 4 14h7l-1 8 10-14h-7l0-6Z", stroke:"rgba(255,213,74,0.95)", strokeWidth:"1.6", strokeLinejoin:"round" })
+    function Modal({title, open, onClose, children}){
+      if (!open) return null;
+      return h("div", { className:"modalBack", onMouseDown:(e)=>{ if (e.target === e.currentTarget) onClose?.(); } },
+        h("div", { className:"modal" },
+          h("div", { className:"modalHead" },
+            h("h3", null, title),
+            h("button", { className:"btn btnGhost", onClick:onClose }, "Cerrar")
+          ),
+          h("div", { className:"modalBody" }, children)
+        )
+      );
+    }
+
+    /**********************
+     * DATA LAYER (Supabase)
+     * Tables expected:
+     *  - routes(room text, name text, sort int, primary key(room,name))
+     *  - player_state(room text, player text, badges int, hours int, location text, notes text, updated_at timestamptz, primary key(room,player))
+     *  - captures(id uuid, room text, player text, route text, pokemon text, level int, created_at timestamptz, updated_at timestamptz)
+     *  - team(id uuid, room text, player text, pokemon text, level int, status text, created_at timestamptz, updated_at timestamptz)
+     *  - matches(id uuid, room text, stage text, p1 text, p2 text, winner text, updated_at timestamptz)
+     **********************/
+    const SETUP_SQL = `-- Ejecuta esto en Supabase (SQL Editor) una vez
+create table if not exists public.routes(
+  room text not null,
+  name text not null,
+  sort int not null default 9999,
+  primary key(room, name)
+);
+
+create table if not exists public.player_state(
+  room text not null,
+  player text not null,
+  badges int not null default 0,
+  hours int not null default 0,
+  location text default '',
+  notes text default '',
+  updated_at timestamptz default now(),
+  primary key(room, player)
+);
+
+create table if not exists public.captures(
+  id uuid primary key default gen_random_uuid(),
+  room text not null,
+  player text not null,
+  route text not null,
+  pokemon text not null,
+  level int not null default 1,
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.team(
+  id uuid primary key default gen_random_uuid(),
+  room text not null,
+  player text not null,
+  pokemon text not null,
+  level int not null default 1,
+  status text not null default 'team', -- team | boxed | dead
+  created_at timestamptz default now(),
+  updated_at timestamptz default now()
+);
+
+create table if not exists public.matches(
+  id uuid primary key default gen_random_uuid(),
+  room text not null,
+  stage text not null,
+  p1 text not null,
+  p2 text not null,
+  winner text,
+  updated_at timestamptz default now()
+);
+
+-- RLS simple (si NO usas auth). Si usas auth, podemos endurecerlo.
+alter table public.routes enable row level security;
+alter table public.player_state enable row level security;
+alter table public.captures enable row level security;
+alter table public.team enable row level security;
+alter table public.matches enable row level security;
+
+create policy "public read routes" on public.routes for select using (true);
+create policy "public write routes" on public.routes for insert with check (true);
+create policy "public update routes" on public.routes for update using (true);
+
+create policy "public read player_state" on public.player_state for select using (true);
+create policy "public write player_state" on public.player_state for insert with check (true);
+create policy "public update player_state" on public.player_state for update using (true);
+
+create policy "public read captures" on public.captures for select using (true);
+create policy "public write captures" on public.captures for insert with check (true);
+create policy "public update captures" on public.captures for update using (true);
+create policy "public delete captures" on public.captures for delete using (true);
+
+create policy "public read team" on public.team for select using (true);
+create policy "public write team" on public.team for insert with check (true);
+create policy "public update team" on public.team for update using (true);
+create policy "public delete team" on public.team for delete using (true);
+
+create policy "public read matches" on public.matches for select using (true);
+create policy "public write matches" on public.matches for insert with check (true);
+create policy "public update matches" on public.matches for update using (true);
+`;
+
+    async function seedRoutesIfEmpty(){
+      const { data, error } = await sb.from("routes").select("name").eq("room", APP_ROOM).limit(1);
+      if (error) throw error;
+      if (data && data.length) return;
+
+      const rows = DEFAULT_ROUTES.map((name, idx)=>({ room: APP_ROOM, name, sort: idx }));
+      const { error: e2 } = await sb.from("routes").insert(rows);
+      if (e2) throw e2;
+    }
+
+    async function ensurePlayerState(player){
+      const { data, error } = await sb.from("player_state").select("*").eq("room", APP_ROOM).eq("player", player).maybeSingle();
+      if (error) throw error;
+      if (data) return data;
+      const row = { room: APP_ROOM, player, badges: 0, hours: 0, location: "", notes: "" };
+      const { error: e2 } = await sb.from("player_state").insert(row);
+      if (e2) throw e2;
+      return row;
+    }
+
+    async function ensureMatchesForStage(stageId){
+      const { data, error } = await sb.from("matches").select("id").eq("room", APP_ROOM).eq("stage", stageId).limit(1);
+      if (error) throw error;
+      if (data && data.length) return;
+
+      const ms = pairs(PLAYERS).map(([p1,p2])=>({ room: APP_ROOM, stage: stageId, p1, p2, winner: null }));
+      const { error: e2 } = await sb.from("matches").insert(ms);
+      if (e2) throw e2;
+    }
+
+    /**********************
+     * UI
+     **********************/
+    function PlayerSelect({ onPick, onSetup }){
+      const [pick, setPick] = useState(PLAYERS[0] || "");
+      return h("div", { className:"loginWrap" },
+        h("div", { className:"loginHero" },
+          h("div", { className:"loginBanner" },
+            h("h1", null, "POKÉMON TRACKER — AÑIL\nCapturas · Equipo privado · Liguillas Showdown")
+          ),
+          h("div", { className:"loginBody" },
+            h("p", { className:"muted" },
+              "Elige tu nombre para entrar. Se guardará en este navegador hasta que cierres sesión."
+            ),
+            h("div", { className:"loginRow" },
+              h("div", { className:"field" },
+                h("div", { className:"label" }, "Jugador"),
+                h("select", { className:"select", value:pick, onChange:(e)=>setPick(e.target.value) },
+                  ...PLAYERS.map(p=>h("option",{key:p,value:p},p))
+                )
+              ),
+              h("button", { className:"btn btnPrimary", onClick:()=>onPick(pick) }, "Entrar")
+            ),
+            h("div", { style:{marginTop:"10px"} },
+              h("button", { className:"btn btnGhost", onClick:onSetup }, "Ver/Crear tablas de Supabase (Setup)")
+            )
           )
         )
-      };
+      );
+    }
 
-      function loadState() {
-        try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "{}"); }
-        catch { return {}; }
-      }
-      function saveState(state) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-      }
+    function Topbar({ tab, setTab, player, onLogout, onSetup }){
+      return h("div", { className:"topbar" },
+        h("div", { className:"topbarInner" },
+          h("div", { className:"brand" },
+            h("div", { className:"ball" }),
+            h("div", null, "Pokemon Tracker")
+          ),
+          h("div", { className:"tabs" },
+            h("button", { className:"tab"+(tab==="dashboard"?" active":""), onClick:()=>setTab("dashboard") }, "Dashboard"),
+            h("button", { className:"tab"+(tab==="captures"?" active":""), onClick:()=>setTab("captures") }, "Capturas"),
+            h("button", { className:"tab"+(tab==="tournaments"?" active":""), onClick:()=>setTab("tournaments") }, "Torneos")
+          ),
+          h("div", { className:"right" },
+            player ? h("div", { className:"pill" }, "Jugador: ", h("strong", null, player)) : null,
+            h("button", { className:"linkBtn", onClick:onSetup }, "Setup"),
+            h("button", { className:"linkBtn", onClick:onLogout }, "Logout")
+          )
+        )
+      );
+    }
 
-      function spriteUrl(slug){
-        const s = safeLower(slug);
-        if (!s) return "";
-        return `https://play.pokemonshowdown.com/sprites/gen5/${s}.png`;
-      }
+    function Dashboard({ player, routes, captures, team, playerState, setPlayerState, onUpsertTeam, onDeleteTeam, toast }){
+      const myCaps = useMemo(()=>captures.filter(c=>c.player===player), [captures, player]);
+      const totalRoutes = routes.length || 1;
+      const visited = new Set(myCaps.map(c=>c.route)).size;
+      const badges = playerState?.badges ?? 0;
 
-      function parseRunJson(text) {
-        const data = JSON.parse(text);
-        const locations = Array.isArray(data.locations) ? data.locations : [];
-        const customLocations = Array.isArray(data.customLocations) ? data.customLocations : [];
+      const [pokeName, setPokeName] = useState("");
+      const [pokeLevel, setPokeLevel] = useState(5);
+      const [pokeStatus, setPokeStatus] = useState("team");
 
-        const customNameById = {};
-        const customOrderById = {};
-        for (const c of customLocations) {
-          if (c && c.value != null) {
-            customNameById[String(c.value)] = c.name ?? String(c.value);
-            customOrderById[String(c.value)] = c.order ?? null;
-          }
-        }
+      const myTeam = useMemo(()=>team.filter(t=>t.player===player), [team, player]);
+      const teamActive = myTeam.filter(t=>t.status==="team");
+      const dead = myTeam.filter(t=>t.status==="dead").length;
 
-        const byId = {};
-        for (const loc of locations) {
-          const id = String(loc.id);
-          const displayName =
-            customNameById[id] ||
-            (loc.locationName ?? null) ||
-            `Zona ${id}`;
-
-          byId[id] = {
-            id,
-            displayName,
-            encounter: loc.encounter ?? null,
-            name: loc.name ?? null,
-            nickname: loc.nickname ?? null,
-            status: loc.status ?? null,
-            sortKey: customOrderById[id] ?? id
-          };
-        }
-
-        return { gameId: data.id ?? "unknown", byId, customLocations };
+      async function saveProgress(next){
+        const payload = { ...next, room: APP_ROOM, player, updated_at: new Date().toISOString() };
+        const { error } = await sb.from("player_state").upsert(payload, { onConflict:"room,player" });
+        if (error) { toast.setMsg("❌ Error guardando progreso"); console.error(error); return; }
+        toast.setMsg("✅ Progreso actualizado");
       }
 
-      function statusLabel(status){
-        if (!status) return null;
-        const s = safeLower(status);
-        if (["dead","muerto","rip"].includes(s)) return { text:"Muerto", cls:"bad" };
-        if (["boxed","caja"].includes(s)) return { text:"Caja", cls:"warn" };
-        if (["alive","vivo","ok"].includes(s)) return { text:"Vivo", cls:"ok" };
-        return { text: status, cls:"warn" };
+      function toggleBadge(i){
+        const bit = 1 << i;
+        const cur = (playerState?.badges ?? 0);
+        const next = (cur & bit) ? (cur & ~bit) : (cur | bit);
+        const np = { ...playerState, badges: next };
+        setPlayerState(np);
+        saveProgress(np);
       }
 
-      function App() {
-        const [state, setState] = useState(() => {
-          const saved = loadState();
-          return { players: saved.players || {} };
-        });
+      function badgeCountFromBits(bits){
+        let c=0;
+        for(let i=0;i<8;i++) if (bits & (1<<i)) c++;
+        return c;
+      }
 
-        const [room, setRoom] = useState("ANIL-2025");
+      const badgesCount = badgeCountFromBits(badges);
+      const badgesPct = Math.round((badgesCount/8)*100);
 
-        // Guardado local (Opción 1)
-        useEffect(() => { saveState(state); }, [state]);
+      async function addTeamPokemon(){
+        const name = safe(pokeName);
+        if (!name) { toast.setMsg("Pon un Pokémon"); return; }
+        const lvl = Number(pokeLevel||1);
+        const row = { room: APP_ROOM, player, pokemon: name, level: lvl, status: pokeStatus, updated_at: new Date().toISOString() };
+        const { error } = await sb.from("team").insert(row);
+        if (error) { toast.setMsg("❌ Error añadiendo al equipo"); console.error(error); return; }
+        toast.setMsg("✅ Añadido a tu equipo");
+        setPokeName(""); setPokeLevel(5); setPokeStatus("team");
+      }
 
-        // Autocarga desde link (Opción 2)
-        useEffect(() => {
-          const loaded = decodeStateFromHash(window.location.hash);
-          if (loaded?.players) setState({ players: loaded.players || {} });
-          // eslint-disable-next-line
-        }, []);
+      async function setTeamStatus(id, status){
+        const { error } = await sb.from("team").update({ status, updated_at: new Date().toISOString() }).eq("id", id);
+        if (error) { toast.setMsg("❌ Error actualizando estado"); console.error(error); return; }
+        toast.setMsg("✅ Estado actualizado");
+      }
 
-        const unionLocationIds = useMemo(() => {
-          const ids = new Set();
-          for (const p of PLAYERS) {
-            const run = state.players?.[p]?.run;
-            if (run?.byId) Object.keys(run.byId).forEach(k => ids.add(k));
-          }
-          return Array.from(ids);
-        }, [state]);
+      return h("div", { className:"dashboard-grid" },
+        h("div", { className:"card" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Dashboard de la aventura"),
+              h("div", { className:"sub" }, "Tu progreso + tu equipo privado (visible para todos en la nube, pero organizado por jugador).")
+            ),
+            h("div", { className:"chip" }, "Viendo: ", h("strong", null, player))
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"split" },
 
-        const orderedLocationIds = useMemo(() => {
-          const entries = [];
-          for (const id of unionLocationIds) {
-            let example = null;
-            for (const p of PLAYERS) {
-              const loc = state.players?.[p]?.run?.byId?.[id];
-              if (loc) { example = loc; break; }
-            }
-            entries.push({
-              id,
-              name: example?.displayName || `Zona ${id}`,
-              sortKey: example?.sortKey ?? id
-            });
-          }
-
-          const toTuple = (k) => {
-            const s = String(k);
-            const n = Number(s);
-            if (!Number.isNaN(n) && s.trim() !== "") return [0, n, s];
-            return [1, s, s];
-          };
-
-          return entries.sort((a,b)=>{
-            const A = toTuple(a.sortKey), B = toTuple(b.sortKey);
-            if (A[0] !== B[0]) return A[0]-B[0];
-            if (A[1] < B[1]) return -1;
-            if (A[1] > B[1]) return 1;
-            return String(a.name).localeCompare(String(b.name));
-          }).map(e=>e.id);
-        }, [unionLocationIds, state]);
-
-        function setPlayerRun(player, rawJson, run) {
-          setState(prev => ({
-            ...prev,
-            players: { ...(prev.players||{}), [player]: { rawJson, run } }
-          }));
-        }
-
-        function clearPlayer(player){
-          setState(prev => {
-            const next = { ...(prev.players||{}) };
-            delete next[player];
-            return { ...prev, players: next };
-          });
-        }
-
-        function onUpload(player, file) {
-          const reader = new FileReader();
-          reader.onload = () => {
-            try {
-              const raw = String(reader.result || "");
-              const run = parseRunJson(raw);
-              setPlayerRun(player, raw, run);
-            } catch (e) {
-              alert(`JSON inválido para ${player}: ${e?.message || e}`);
-            }
-          };
-          reader.readAsText(file);
-        }
-
-        // Opción 1: backup archivo
-        function exportAll() {
-          const blob = new Blob([JSON.stringify(state, null, 2)], { type:"application/json" });
-          const a = document.createElement("a");
-          a.href = URL.createObjectURL(blob);
-          a.download = "anil-tracker-backup.json";
-          a.click();
-          URL.revokeObjectURL(a.href);
-        }
-
-        function importAll(text){
-          try{
-            const data = JSON.parse(text);
-            if (!data || typeof data !== "object") throw new Error("Formato inválido");
-            setState({ players: data.players || {} });
-          } catch(e){
-            alert(`Backup inválido: ${e?.message || e}`);
-          }
-        }
-
-        // Opción 2: link compartible
-        async function copyShareLink(){
-          const url = new URL(window.location.href);
-          url.hash = encodeStateToHash(state);
-          try{
-            await navigator.clipboard.writeText(url.toString());
-            alert("Link copiado ✅ Pégalo en Discord.");
-          }catch{
-            // fallback
-            prompt("Copia el link:", url.toString());
-          }
-        }
-
-        function loadFromLink(){
-          const loaded = decodeStateFromHash(window.location.hash);
-          if (!loaded?.players) return alert("No hay datos válidos en el link.");
-          setState({ players: loaded.players || {} });
-          alert("Datos cargados desde el link ✅");
-        }
-
-        // Opción 3: room online
-        async function saveRoomNow(){
-          const r = await saveRoom(room, state);
-          alert(r.ok ? "Room guardada ✅" : ("Error: " + r.error));
-        }
-        async function loadRoomNow(){
-          const r = await loadRoom(room);
-          if (!r.ok) return alert("Error: " + r.error);
-          setState({ players: r.state.players || {} });
-          alert("Room cargada ✅");
-        }
-
-        return h("div", { className:"grid" },
-
-          // HERO
-          h("div", { className:"hero" },
-            h("div", { className:"banner" }),
-            h("div", { className:"content" },
-              h("div", { className:"heroTop" },
-
-                h("div", { className:"brand" },
-                  h("div", { className:"logo" }, h(Icons.pokeball)),
-                  h("div", { className:"titleBlock" },
-                    h("h1", null, "POKÉDEX RUN TRACKER"),
-                    h("p", null, "Pokémon Añil (Eric Lostie) · 1 captura por zona · Multi-jugador")
-                  )
+              h("div", null,
+                h("div", { className:"kpi", style:{marginBottom:"12px"} },
+                  h("div", { className:"t" }, "Medallas (bits)"),
+                  h("div", { className:"v blue" }, `${badgesCount} / 8`),
+                  h("div", { className:"muted" }, `Progreso: ${badgesPct}%`)
                 ),
 
-                h("div", { className:"heroActions" },
-                  h("button", { className:"btnPrimary", onClick: exportAll }, h(Icons.download), "Exportar backup"),
-                  h("label", { className:"btnPrimary" },
-                    h(Icons.upload), "Importar backup",
-                    h("input", {
-                      type:"file", accept:"application/json",
-                      onChange:(e)=>{
-                        const f = e.target.files?.[0];
-                        if (!f) return;
-                        const r = new FileReader();
-                        r.onload = ()=> importAll(String(r.result||""));
-                        r.readAsText(f);
-                        e.target.value = "";
-                      }
-                    })
+                h("div", { className:"badges" },
+                  ...Array.from({length:8}).map((_,i)=>{
+                    const on = (badges & (1<<i))!==0;
+                    return h("button", {
+                      key:i,
+                      className:"badgeBtn"+(on?" on":""),
+                      title: on ? "Medalla obtenida" : "Sin medalla",
+                      onClick:()=>toggleBadge(i)
+                    }, i+1);
+                  })
+                ),
+
+                h("div", { className:"kpis" },
+                  h("div", { className:"kpi" },
+                    h("div", { className:"t" }, "Pokémon capturados"),
+                    h("div", { className:"v red" }, myCaps.length)
                   ),
-
-                  
-
-                  h("button", {
-                    className:"btnDanger",
-                    onClick: ()=>{
-                      if (confirm("¿Borrar TODO lo guardado en este navegador?")) {
-                        localStorage.removeItem(STORAGE_KEY);
-                        setState({ players:{} });
-                      }
-                    }
-                  }, h(Icons.trash), "Reset total")
+                  h("div", { className:"kpi" },
+                    h("div", { className:"t" }, "Rutas visitadas"),
+                    h("div", { className:"v blue" }, visited, h("div", { className:"muted" }, `de ${totalRoutes}`))
+                  ),
+                  h("div", { className:"kpi" },
+                    h("div", { className:"t" }, "Muertos (equipo)"),
+                    h("div", { className:"v purple" }, dead)
+                  )
                 )
-              )
-            )
-          ),
+              ),
 
-          // UPLOAD CARD
-          h("div", { className:"card" },
-            h("div", { className:"cardHead" },
-              h("h2", null, h(Icons.bolt), " Subir JSON por jugador"),
-              h("div", { className:"muted2" }, "Local + Link + Room (opcional)")
-            ),
-            h("div", { className:"cardBody" },
-              h("div", { className:"pills" },
-                ...PLAYERS.map(p => {
-                  const has = !!state.players?.[p]?.run;
-                  const gameId = state.players?.[p]?.run?.gameId;
-
-                  const badgeCls = has ? "badge ok" : "badge";
-                  const badgeText = has ? `✓ cargado (${gameId||"?"})` : "sin JSON";
-
-                  return h("div", { key:p, className:"pill" },
-                    h("div", { className:"pillTop" },
-                      h("div", { className:"playerName" },
-                        h(Icons.pokeball),
-                        h("span", null, p)
-                      ),
-                      h("span", { className: badgeCls }, badgeText)
+              h("div", null,
+                h("div", { className:"card", style:{boxShadow:"var(--shadow2)", background:"rgba(255,255,255,.86)"} },
+                  h("div", { className:"cardHead" },
+                    h("div", null,
+                      h("h2", null, "Actualizar progreso"),
+                      
                     ),
-                    h("div", { className:"pillActions" },
-                      h("label", { className:"btnPrimary" },
-                        h(Icons.upload), (has ? "Reemplazar" : "Subir"),
-                        h("input", {
-                          type:"file", accept:"application/json",
-                          onChange:(e)=>{
-                            const f = e.target.files?.[0];
-                            if (f) onUpload(p, f);
-                            e.target.value = "";
-                          }
-                        })
-                      ),
-                      h("button", { className:"btnDanger", onClick:()=>clearPlayer(p), disabled:!has }, h(Icons.trash), "Quitar")
+                    h("div", { className:"chip" }, "Auto-guardado")
+                  ),
+                  h("div", { className:"cardBody" },
+                    h("div", { className:"field" },
+                      h("div", { className:"label" }, "Horas jugadas"),
+                      h("input", { className:"input", type:"number", min:"0", value: playerState?.hours ?? 0,
+                        onChange:(e)=>{
+                          const np = { ...playerState, hours: Number(e.target.value||0) };
+                          setPlayerState(np); saveProgress(np);
+                        }
+                      })
+                    ),
+                    h("div", { className:"field", style:{marginTop:"10px"} },
+                      h("div", { className:"label" }, "Ubicación actual"),
+                      h("input", { className:"input", placeholder:"Ej: Ciudad Celeste", value: playerState?.location ?? "",
+                        onChange:(e)=>{
+                          const np = { ...playerState, location: e.target.value };
+                          setPlayerState(np); saveProgress(np);
+                        }
+                      })
+                    ),
+                    h("div", { className:"field", style:{marginTop:"10px"} },
+                      h("div", { className:"label" }, "Notas"),
+                      h("textarea", { className:"textarea", placeholder:"Ej: Próximo objetivo: Misty", value: playerState?.notes ?? "",
+                        onChange:(e)=>{
+                          const np = { ...playerState, notes: e.target.value };
+                          setPlayerState(np); saveProgress(np);
+                        }
+                      })
                     )
-                  );
-                })
-              ),
-
-              // ROOM CARD INLINE
-              h("div", { className:"roomRow" },
-                h("input", {
-                  className:"roomInput",
-                  value: room,
-                  onChange:(e)=>setRoom(e.target.value),
-                  placeholder:"ROOM (ej: ANIL-2025)"
-                }),
-                h("button", { className:"btnPrimary", onClick: saveRoomNow }, "Guardar Room"),
-                h("button", { className:"btnPrimary", onClick: loadRoomNow }, "Cargar Room"),
-                !supa ? h("span", { className:"badge warn" }, "Supabase no configurado (opcional)") : null
-              ),
-
-              h("div", { style:{marginTop:"10px"} },
-                h("p", { className:"muted" },
-                  "Compartir rápido: subes todo → “Copiar link” → lo pegáis en Discord. Al abrirlo, se carga automático."
+                  )
                 )
               )
             )
-          ),
+          )
+        ),
 
-          // TABLE CARD
-          h("div", { className:"card" },
-            h("div", { className:"cardHead" },
-              h("h2", null, "Tabla comparativa (Rutas × Jugadores)"),
-              h("div", { className:"muted2" }, "Sprites + apodo + estado")
+        h("div", { className:"card" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Equipo y PC (privado por jugador)"),
+              h("div", { className:"sub" }, "Añade Pokémon a tu equipo, marca estado: equipo / caja / muerto.")
             ),
-            h("div", { className:"cardBody" },
-              orderedLocationIds.length === 0
-                ? h("p", { className:"muted" }, "Subid al menos un JSON para ver datos.")
-                : h("div", { className:"tableWrap" },
-                    h("table", null,
-                      h("thead", null,
-                        h("tr", null,
-                          h("th", null, "Zona / Ruta"),
-                          ...PLAYERS.map(p => h("th", { key:p }, p))
+            h("div", { className:"chip" }, `En equipo: ${teamActive.length} / 6`)
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"row" },
+              h("div", { className:"field", style:{flex:"2 1 220px"} },
+                h("div", { className:"label" }, "Pokémon"),
+                h("input", { className:"input", value: pokeName, placeholder:"Ej: Pikachu", onChange:(e)=>setPokeName(e.target.value) })
+              ),
+              h("div", { className:"field", style:{maxWidth:"160px"} },
+                h("div", { className:"label" }, "Nivel"),
+                h("input", { className:"input", type:"number", min:"1", value: pokeLevel, onChange:(e)=>setPokeLevel(e.target.value) })
+              ),
+              h("div", { className:"field", style:{maxWidth:"190px"} },
+                h("div", { className:"label" }, "Estado"),
+                h("select", { className:"select", value: pokeStatus, onChange:(e)=>setPokeStatus(e.target.value) },
+                  h("option", { value:"team" }, "Equipo"),
+                  h("option", { value:"boxed" }, "Caja"),
+                  h("option", { value:"dead" }, "Muerto")
+                )
+              ),h("button", { className:"btn btnPrimary", style:{alignSelf:"flex-end"}, onClick:addTeamPokemon }, "Añadir")
+              
+            ),
+
+            h("div", { style:{height:"10px"} }),
+
+            myTeam.length === 0
+              ? h("div", { className:"muted" }, "Aún no tienes Pokémon en tu lista privada.")
+              : h("div", { className:"teamGrid" },
+                  ...myTeam
+                    .slice()
+                    .sort((a,b)=> (a.status===b.status ? (a.pokemon||"").localeCompare(b.pokemon||"") : (a.status||"").localeCompare(b.status||"")))
+                    .map(t=>{
+                      return h("div", { key:t.id, className:"pokeCard" },
+                        h("img", { className:"sprite", src: spriteUrl(t.pokemon), alt: t.pokemon,
+                          onError:(e)=>{ e.currentTarget.style.visibility="hidden"; }
+                        }),
+                        h("div", { style:{flex:"1"} },
+                          h("div", { className:"pokeName" }, t.pokemon),
+                          h("div", { className:"pokeMeta" }, `Nv. ${t.level}`),
+                          h("div", { className:"tag "+t.status }, t.status==="team"?"Equipo":(t.status==="boxed"?"Caja":"Muerto")),
+                          h("div", { className:"miniRow" },
+                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "team") }, "Equipo"),
+                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "boxed") }, "Caja"),
+                            h("button", { className:"btn btnGhost", onClick:()=>setTeamStatus(t.id, "dead") }, "Muerto"),
+                            h("button", { className:"btn btnDanger", onClick:async()=>{
+                              if (!confirm("¿Eliminar este Pokémon de tu lista privada?")) return;
+                              const { error } = await sb.from("team").delete().eq("id", t.id);
+                              if (error) { toast.setMsg("❌ Error eliminando"); console.error(error); return; }
+                              toast.setMsg("🗑️ Eliminado");
+                            } }, "Borrar")
+                          )
                         )
-                      ),
-                      h("tbody", null,
-                        ...orderedLocationIds.map(id => {
-                          let locName = `Zona ${id}`;
-                          for (const p of PLAYERS) {
-                            const loc = state.players?.[p]?.run?.byId?.[id];
-                            if (loc?.displayName) { locName = loc.displayName; break; }
-                          }
+                      );
+                    })
+                )
+          )
+        )
+      );
+    }
 
-                          return h("tr", { key:id },
-                            h("td", null,
-                              h("div", { className:"locTitle" }, locName),
-                              h("div", { className:"locMeta" }, `id: ${id}`)
-                            ),
-                            ...PLAYERS.map(p => {
-                              const loc = state.players?.[p]?.run?.byId?.[id];
-                              if (!loc) return h("td", { key:p }, h("span", { className:"muted" }, "—"));
+    function Captures({ player, routes, captures, toast }){
+      const [q, setQ] = useState("");
+      const [filterPlayer, setFilterPlayer] = useState("all");
+      const [filterRoute, setFilterRoute] = useState("all");
 
-                              const slug = safeLower(loc.encounter || "");
-                              const label = statusLabel(loc.status);
-                              const display = (loc.nickname ? `${loc.nickname} · ` : "") + (loc.name || loc.encounter || "???");
+      const [newRoute, setNewRoute] = useState("");
 
-                              return h("td", { key:p },
-                                h("div", { className:"cell" },
-                                  h("div", { className:"pokeRow" },
-                                    h("img", {
-                                      className:"sprite",
-                                      src: spriteUrl(slug),
-                                      alt: loc.name || loc.encounter || "",
-                                      onError:(e)=>{ e.currentTarget.style.display="none"; }
-                                    }),
-                                    h("div", null,
-                                      h("div", { className:"pokeName" }, display),
-                                      h("div", { className:"pokeSlug" }, slug ? `(${slug})` : "")
-                                    )
+      const [route, setRoute] = useState(routes[0]?.name || "");
+      const [pokemon, setPokemon] = useState("");
+      const [level, setLevel] = useState(5);
+
+      const [editing, setEditing] = useState(null);
+
+      useEffect(()=>{
+        if (!route && routes[0]?.name) setRoute(routes[0].name);
+      }, [routes]);
+
+      const shown = useMemo(()=>{
+        const qq = lower(q);
+        return captures.filter(c=>{
+          if (filterPlayer !== "all" && c.player !== filterPlayer) return false;
+          if (filterRoute !== "all" && c.route !== filterRoute) return false;
+          if (!qq) return true;
+          return lower(c.route).includes(qq) || lower(c.player).includes(qq) || lower(c.pokemon).includes(qq) || String(c.level||"").includes(qq);
+        });
+      }, [captures, q, filterPlayer, filterRoute]);
+
+      async function addRoute(){
+        const name = safe(newRoute);
+        if (!name) return;
+        const sort = routes.length;
+        const { error } = await sb.from("routes").upsert({ room: APP_ROOM, name, sort }, { onConflict:"room,name" });
+        if (error) { toast.setMsg("❌ Error creando ruta"); console.error(error); return; }
+        toast.setMsg("✅ Ruta añadida");
+        setNewRoute("");
+      }
+
+      async function saveCapture(){
+        const r = safe(route);
+        const p = safe(pokemon);
+        const lvl = Number(level||1);
+        if (!r || !p) { toast.setMsg("Rellena ruta y Pokémon"); return; }
+
+        if (editing){
+          if (editing.player !== player) { toast.setMsg("Solo puedes editar las tuyas"); return; }
+          const { error } = await sb.from("captures").update({
+            route:r, pokemon:p, level:lvl, updated_at: new Date().toISOString()
+          }).eq("id", editing.id);
+          if (error) { toast.setMsg("❌ Error actualizando"); console.error(error); return; }
+          toast.setMsg("✅ Captura actualizada");
+          setEditing(null);
+        } else {
+          const { error } = await sb.from("captures").insert({
+            room: APP_ROOM, player, route:r, pokemon:p, level:lvl
+          });
+          if (error) { toast.setMsg("❌ Error guardando captura"); console.error(error); return; }
+          toast.setMsg("✅ Captura añadida");
+        }
+        setPokemon(""); setLevel(5);
+      }
+
+      function startEdit(c){
+        setEditing(c);
+        setRoute(c.route);
+        setPokemon(c.pokemon);
+        setLevel(c.level);
+      }
+
+      async function delCapture(c){
+        if (c.player !== player) { toast.setMsg("Solo puedes borrar las tuyas"); return; }
+        if (!confirm("¿Borrar esta captura?")) return;
+        const { error } = await sb.from("captures").delete().eq("id", c.id);
+        if (error) { toast.setMsg("❌ Error borrando"); console.error(error); return; }
+        toast.setMsg("🗑️ Captura borrada");
+      }
+
+      const routesSorted = useMemo(()=>routes.slice().sort((a,b)=>(a.sort??9999)-(b.sort??9999) || a.name.localeCompare(b.name)), [routes]);
+
+      return h("div", { className:"grid" },
+        h("div", { className:"card" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Añadir captura (pública)"),
+              h("div", { className:"sub" }, "Cada jugador registra su captura por ruta aquí. Se ve para todos.")
+            ),
+            h("div", { className:"chip" }, editing ? "Editando…" : "Nueva captura")
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"field" },
+              h("div", { className:"label" }, "Ruta / Zona"),
+              h("select", { className:"select", value: route, onChange:(e)=>setRoute(e.target.value) },
+                ...routesSorted.map(r=>h("option",{key:r.name,value:r.name}, r.name))
+              )
+            ),
+            h("div", { className:"field", style:{marginTop:"10px"} },
+              h("div", { className:"label" }, "Pokémon"),
+              h("input", { className:"input", placeholder:"Ej: Pikachu", value:pokemon, onChange:(e)=>setPokemon(e.target.value) })
+            ),
+            h("div", { className:"field", style:{marginTop:"10px"} },
+              h("div", { className:"label" }, "Nivel"),
+              h("input", { className:"input", type:"number", min:"1", value:level, onChange:(e)=>setLevel(e.target.value) })
+            ),
+            h("div", { className:"rowBetween", style:{marginTop:"12px"} },
+              h("div", { className:"row" },
+                h("button", { className:"btn btnPrimary", onClick:saveCapture }, editing ? "Guardar cambios" : "Registrar captura"),
+                editing ? h("button", { className:"btn btnGhost", onClick:()=>{ setEditing(null); setPokemon(""); setLevel(5); } }, "Cancelar") : null
+              ),
+              h("div", { className:"chip" }, "Jugador: ", h("strong", null, player))
+            )
+          )
+        ),
+
+        h("div", { className:"card" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Rutas (comunes)"),
+              h("div", { className:"sub" }, "Añade rutas si el hack tiene zonas nuevas. Aparecerán para todos.")
+            ),
+            h("div", { className:"chip" }, `${routes.length} rutas`)
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"row" },
+              h("div", { className:"field", style:{flex:"2 1 260px"} },
+                h("div", { className:"label" }, "Nueva ruta"),
+                h("input", { className:"input", value:newRoute, placeholder:"Ej: Ruta 26 (hack)", onChange:(e)=>setNewRoute(e.target.value) })
+              ),
+              h("button", { className:"btn btnBlue", onClick:addRoute, disabled: !safe(newRoute) }, "Añadir ruta")
+            ),
+            h("div", { style:{marginTop:"10px"} },
+              h("div", { className:"muted" }, "Tip: usa nombres consistentes (Ruta X, Cueva…, Torre…).")
+            )
+          )
+        ),
+
+        h("div", { className:"card", style:{gridColumn:"1 / -1"} },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Tabla pública de capturas"),
+              h("div", { className:"sub" }, "Buscador + filtros. Solo puedes editar/borrar tus filas.")
+            ),
+            h("div", { className:"row" },
+              h("span", { className:"chip" }, `${shown.length} / ${captures.length}`),
+              h("span", { className:"chip" }, "Scroll →")
+            )
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"row" },
+              h("div", { className:"field", style:{flex:"2 1 280px"} },
+                h("div", { className:"label" }, "Buscar"),
+                h("input", { className:"input", value:q, onChange:(e)=>setQ(e.target.value), placeholder:"Ruta, jugador, Pokémon, nivel…" })
+              ),
+              h("div", { className:"field", style:{maxWidth:"220px"} },
+                h("div", { className:"label" }, "Jugador"),
+                h("select", { className:"select", value:filterPlayer, onChange:(e)=>setFilterPlayer(e.target.value) },
+                  h("option", { value:"all" }, "Todos"),
+                  ...PLAYERS.map(p=>h("option",{key:p,value:p},p))
+                )
+              ),
+              h("div", { className:"field", style:{maxWidth:"260px"} },
+                h("div", { className:"label" }, "Ruta"),
+                h("select", { className:"select", value:filterRoute, onChange:(e)=>setFilterRoute(e.target.value) },
+                  h("option", { value:"all" }, "Todas"),
+                  ...routesSorted.map(r=>h("option",{key:r.name,value:r.name}, r.name))
+                )
+              )
+            ),
+
+            h("div", { style:{height:"10px"} }),
+
+            h("div", { className:"tableWrap" },
+              h("table", null,
+                h("thead", null,
+                  h("tr", null,
+                    h("th", { className:"stickyLeft" }, "Ruta / Zona"),
+                    h("th", null, "Pokémon"),
+                    h("th", null, "Nivel"),
+                    h("th", null, "Jugador"),
+                    h("th", null, "Acciones")
+                  )
+                ),
+                h("tbody", null,
+                  ...shown
+                    .slice()
+                    .sort((a,b)=> (a.route||"").localeCompare(b.route||"") || (a.player||"").localeCompare(b.player||""))
+                    .map(c=>{
+                      return h("tr", { key:c.id },
+                        h("td", { className:"stickyLeft" }, c.route),
+                        h("td", null,
+                          h("div", { className:"capCell" },
+                            h("img", { className:"sprite", src:spriteUrl(c.pokemon), alt:c.pokemon,
+                              onError:(e)=>{ e.currentTarget.style.visibility="hidden"; }
+                            }),
+                            h("div", null,
+                              h("div", { className:"capName" }, c.pokemon),
+                              h("div", { className:"capSmall" }, "Sprite Showdown · gen5")
+                            )
+                          )
+                        ),
+                        h("td", null, `Nv. ${c.level}`),
+                        h("td", null, h("span", { className:"chip" }, c.player)),
+                        h("td", null,
+                          c.player === player
+                            ? h("div", { className:"capActions" },
+                                h("button", { className:"btn btnGhost", onClick:()=>startEdit(c) }, "Editar"),
+                                h("button", { className:"btn btnDanger", onClick:()=>delCapture(c) }, "Borrar")
+                              )
+                            : h("span", { className:"muted" }, "—")
+                        )
+                      );
+                    })
+                )
+              )
+            )
+          )
+        )
+      );
+    }
+
+    function Tournaments({ player, matches, toast }){
+      const [stage, setStage] = useState(STAGES[0].id);
+
+      const stageMatches = useMemo(()=>matches.filter(m=>m.stage===stage), [matches, stage]);
+
+      const standings = useMemo(()=>{
+        const pts = {};
+        for (const p of PLAYERS) pts[p]=0;
+        for (const m of stageMatches){
+          if (m.winner && pts[m.winner] != null) pts[m.winner] += 1;
+        }
+        const rows = Object.entries(pts).map(([p,points])=>({player:p, points}));
+        rows.sort((a,b)=> b.points-a.points || a.player.localeCompare(b.player));
+        return rows;
+      }, [stageMatches]);
+
+      const leader = standings[0]?.player ?? null;
+      const complete = stageMatches.every(m=>!!m.winner);
+
+      async function setWinner(matchId, winner){
+        const { error } = await sb.from("matches").update({ winner, updated_at: new Date().toISOString() }).eq("id", matchId);
+        if (error) { toast.setMsg("❌ Error guardando resultado"); console.error(error); return; }
+        toast.setMsg("✅ Resultado registrado (+1 punto)");
+      }
+
+      async function clearWinner(matchId){
+        const { error } = await sb.from("matches").update({ winner: null, updated_at: new Date().toISOString() }).eq("id", matchId);
+        if (error) { toast.setMsg("❌ Error borrando resultado"); console.error(error); return; }
+        toast.setMsg("🧹 Resultado borrado");
+      }
+
+      const stageMeta = STAGES.find(s=>s.id===stage);
+
+      return h("div", { className:"grid" },
+        h("div", { className:"card" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Liguillas Showdown"),
+              h("div", { className:"sub" }, "3 etapas fijas. No hay empates: cada victoria = 1 punto. El líder de la etapa gana “captura extra”.")
+            ),
+            h("div", { className:"row" },
+              h("span", { className:"chip" }, `Jugador: ${player}`),
+              h("span", { className:"chip" }, complete ? "Etapa completa" : "Pendiente")
+            )
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"row" },
+              ...STAGES.map(s=>h("button", {
+                key:s.id,
+                className:"btn "+(stage===s.id?"btnPrimary":"btnGhost"),
+                onClick:()=>setStage(s.id)
+              }, s.name))
+            ),
+            h("div", { style:{height:"10px"} }),
+            h("div", { className:"card", style:{boxShadow:"var(--shadow2)", background:"rgba(255,255,255,.86)"} },
+              h("div", { className:"cardHead" },
+                h("div", null,
+                  h("h2", null, stageMeta?.name || "Etapa"),
+                  h("div", { className:"sub" }, "Registra tus combates. Si te equivocas, puedes borrar y volver a poner.")
+                ),
+                h("div", { className:"chip" }, stageMeta?.reward || "")
+              ),
+              h("div", { className:"cardBody" },
+                stageMatches.length === 0
+                  ? h("div", { className:"muted" }, "No hay emparejamientos todavía.")
+                  : h("div", { className:"tableWrap" },
+                      h("table", null,
+                        h("thead", null,
+                          h("tr", null,
+                            h("th", null, "Combate"),
+                            h("th", null, "Ganador"),
+                            h("th", null, "Acciones")
+                          )
+                        ),
+                        h("tbody", null,
+                          ...stageMatches
+                            .slice()
+                            .sort((a,b)=> (a.p1+a.p2).localeCompare(b.p1+b.p2))
+                            .map(m=>{
+                              const mine = (m.p1===player || m.p2===player);
+                              return h("tr", { key:m.id },
+                                h("td", null, h("strong", null, m.p1), " vs ", h("strong", null, m.p2)),
+                                h("td", null,
+                                  m.winner
+                                    ? h("span", { className:"chip" }, "Ganó: ", h("strong", null, m.winner))
+                                    : h("span", { className:"muted" }, "Sin resultado")
+                                ),
+                                h("td", null,
+                                  h("div", { className:"row" },
+                                    h("button", { className:"btn btnBlue", onClick:()=>setWinner(m.id, m.p1), disabled: !mine }, `Gana ${m.p1}`),
+                                    h("button", { className:"btn btnBlue", onClick:()=>setWinner(m.id, m.p2), disabled: !mine }, `Gana ${m.p2}`),
+                                    h("button", { className:"btn btnGhost", onClick:()=>clearWinner(m.id), disabled: !mine }, "Borrar")
                                   ),
-                                  label ? h("div", { className:"statusTag "+label.cls }, label.text) : null
+                                  !mine ? h("div", { className:"small" }, "Solo pueden registrar resultado los jugadores del combate.") : null
                                 )
                               );
                             })
-                          );
-                        })
+                        )
                       )
                     )
-                  )
-            )
-          ),
-
-          // FOOTER
-          h("div", { className:"card" },
-            h("div", { className:"cardBody" },
-              h("div", { className:"footerNote" },
-                h("div", null,
-                  h("div", { style:{fontWeight:800, marginBottom:"4px"} }, "Sugerencia gamer:"),
-                  h("div", { className:"muted" }, "Cuidao Julián os va a reventar")
-                ),
-                h("div", { className:"kbd" }, "Local · Link · Room")
               )
             )
           )
+        ),
+
+        h("div", { className:"cardlader" },
+          h("div", { className:"cardHead" },
+            h("div", null,
+              h("h2", null, "Clasificación"),
+              h("div", { className:"sub" }, "1 punto por victoria.")
+            ),
+            h("div", { className:"chip" }, leader ? `Líder: ${leader}` : "—")
+          ),
+          h("div", { className:"cardBody" },
+            h("div", { className:"tableWrap" },
+              h("table", { style:{minWidth:"unset"} },
+                h("thead", null,
+                  h("tr", null,
+                    h("th", null, "Jugador"),
+                    h("th", null, "Puntos"),
+                    h("th", null, "Bonus")
+                  )
+                ),
+                h("tbody", null,
+                  ...standings.map((r, idx)=>{
+                    const isLeader = (r.player===leader);
+                    return h("tr", { key:r.player, style: isLeader ? {background:"rgba(255,204,51,.22)"} : null },
+                      h("td", null, isLeader ? "🏆 " : "", r.player),
+                      h("td", null, r.points),
+                      h("td", null, complete && isLeader ? "⭐ +1 captura extra" : "—")
+                    );
+                  })
+                )
+              )
+            ),
+            
+          )
+        )
+      );
+    }
+
+    function App(){
+      const toast = useToast();
+      const [setupOpen, setSetupOpen] = useState(false);
+
+      const [player, setPlayer] = useState(()=>localStorage.getItem(LS_PLAYER) || "");
+      const [tab, setTab] = useState(()=>localStorage.getItem(LS_TAB) || "dashboard");
+
+      const [routes, setRoutes] = useState([]);
+      const [captures, setCaptures] = useState([]);
+      const [team, setTeam] = useState([]);
+      const [matches, setMatches] = useState([]);
+      const [playerState, setPlayerState] = useState(null);
+
+      useEffect(()=>{ localStorage.setItem(LS_TAB, tab); }, [tab]);
+
+      async function boot(){
+        try{
+          await seedRoutesIfEmpty();
+          for (const s of STAGES) await ensureMatchesForStage(s.id);
+        }catch(e){
+          console.error(e);
+          toast.setMsg("⚠️ Falta crear tablas/policies en Supabase (abre Setup)");
+        }
+      }
+
+      useEffect(()=>{ boot(); }, []);
+
+      useEffect(()=>{
+        if (!player) return;
+        localStorage.setItem(LS_PLAYER, player);
+        (async()=>{
+          try{
+            const ps = await ensurePlayerState(player);
+            setPlayerState(ps);
+          }catch(e){
+            console.error(e);
+            toast.setMsg("⚠️ No puedo leer player_state (Setup)");
+          }
+        })();
+      }, [player]);
+
+      async function refreshAll(){
+        try{
+          const [r1,c1,t1,m1] = await Promise.all([
+            sb.from("routes").select("*").eq("room", APP_ROOM),
+            sb.from("captures").select("*").eq("room", APP_ROOM),
+            sb.from("team").select("*").eq("room", APP_ROOM),
+            sb.from("matches").select("*").eq("room", APP_ROOM)
+          ]);
+          if (r1.error) throw r1.error;
+          if (c1.error) throw c1.error;
+          if (t1.error) throw t1.error;
+          if (m1.error) throw m1.error;
+
+          setRoutes((r1.data||[]).map(x=>({name:x.name, sort:x.sort})));
+          setCaptures(c1.data||[]);
+          setTeam(t1.data||[]);
+          setMatches(m1.data||[]);
+        }catch(e){
+          console.error(e);
+          toast.setMsg("⚠️ No puedo leer datos (Setup)");
+        }
+      }
+
+      useEffect(()=>{ refreshAll(); }, []);
+
+      // Realtime subscriptions (best-effort)
+      useEffect(()=>{
+        const ch = sb.channel("anil-v3")
+          .on("postgres_changes",{event:"*",schema:"public",table:"routes"},()=>refreshAll())
+          .on("postgres_changes",{event:"*",schema:"public",table:"captures"},()=>refreshAll())
+          .on("postgres_changes",{event:"*",schema:"public",table:"team"},()=>refreshAll())
+          .on("postgres_changes",{event:"*",schema:"public",table:"matches"},()=>refreshAll())
+          .on("postgres_changes",{event:"*",schema:"public",table:"player_state"}, async (payload)=>{
+            if (payload?.new?.player === player) setPlayerState(payload.new);
+          })
+          .subscribe();
+        return ()=>{ sb.removeChannel(ch); };
+      }, [player]);
+
+      function logout(){
+        localStorage.removeItem(LS_PLAYER);
+        setPlayer("");
+      }
+
+      if (!player){
+        return h(React.Fragment, null,
+          h(PlayerSelect, { onPick:(p)=>setPlayer(p), onSetup:()=>setSetupOpen(true) }),
+          h(Modal, { title:"Setup Supabase", open:setupOpen, onClose:()=>setSetupOpen(false) },
+            h("div", { className:"small" },
+              "Si te sale algún error, crea estas tablas/policies en Supabase → SQL Editor. (1 vez)."
+            ),
+            h("div", { style:{height:"10px"} }),
+            h("div", { className:"code" }, SETUP_SQL)
+          ),
+          toast.msg ? h("div", { className:"toast" }, toast.msg) : null
         );
       }
 
-      createRoot(document.getElementById("app")).render(h(App));
-    </script>
-  </body>
+      return h("div", { className:"app" },
+        h(Topbar, {
+          tab, setTab:(t)=>setTab(t),
+          player,
+          onLogout:logout,
+          onSetup:()=>setSetupOpen(true)
+        }),
+        h("div", { className:"wrap" },
+          tab==="dashboard"
+            ? h(Dashboard, { player, routes, captures, team, playerState: playerState||{badges:0,hours:0,location:"",notes:""}, setPlayerState, toast })
+            : tab==="captures"
+              ? h(Captures, { player, routes, captures, toast })
+              : h(Tournaments, { player, matches, toast })
+        ),
+        h(Modal, { title:"Setup Supabase", open:setupOpen, onClose:()=>setSetupOpen(false) },
+          h("div", { className:"small" },
+            "Copia y ejecuta este SQL en Supabase → SQL Editor. Luego recarga la página."
+          ),
+          h("div", { style:{height:"10px"} }),
+          h("div", { className:"code" }, SETUP_SQL)
+        ),
+        toast.msg ? h("div", { className:"toast" }, toast.msg) : null
+      );
+    }
+
+    createRoot(document.getElementById("root")).render(h(App));
+  </script>
+</body>
 </html>
+
+
 
 
